@@ -7,7 +7,7 @@ const CONFIG = {
     GOOGLE_SHEET_URL: 'YOUR_WEB_APP_URL_HERE',
     
     // Change this to your desired admin password
-    ADMIN_PASSWORD: 'your_secure_password_here'
+    ADMIN_PASSWORD: ''
 };
 
 // Make config available globally

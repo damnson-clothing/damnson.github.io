@@ -5,10 +5,29 @@
 // 1. "Orders" - for order data
 // 2. "Inventory" - for stock management
 
+// SECURITY: API Key to prevent unauthorized access
+const API_KEY = 'damnson_secure_2026_key'; // Change this to a random string
+
+// Validate API Key
+function validateApiKey(apiKey) {
+  return apiKey === API_KEY;
+}
+
 // doPost - Handle incoming orders from website
 function doPost(e) {
   try {
     const data = JSON.parse(e.postData.contents);
+    
+    // Validate API Key
+    if (!validateApiKey(data.apiKey)) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          status: 'error',
+          message: 'Unauthorized access'
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
     const action = data.action || 'addOrder';
     
     if (action === 'addOrder') {
@@ -115,6 +134,16 @@ function decreaseStock(data) {
 // doGet - Retrieve all orders for admin dashboard
 function doGet(e) {
   try {
+    // Validate API Key for GET requests too
+    if (!validateApiKey(e.parameter.apiKey)) {
+      return ContentService
+        .createTextOutput(JSON.stringify({
+          status: 'error',
+          message: 'Unauthorized access'
+        }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
     const action = e.parameter.action || 'getOrders';
     
     if (action === 'getOrders') {
