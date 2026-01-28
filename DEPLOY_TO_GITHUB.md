@@ -32,7 +32,7 @@ git commit -m "Initial commit - DamnSon Clothing website"
 git remote add origin https://github.com/neilalcabasa/damnson.git
 
 # Push to GitHub
-git branch -M main
+git
 git push -u origin main
 ```
 

@@ -22,10 +22,6 @@ const products = {
     }
 };
 
-// Google Sheets Configuration
-// IMPORTANT: Replace with your Google Apps Script Web App URL
-const GOOGLE_SHEET_URL = 'YOUR_WEB_APP_URL_HERE';
-
 let currentProduct = null;
 let selectedSize = null;
 let orderData = {};
@@ -175,65 +171,48 @@ function sendOrderToFacebook(formData) {
         notes: formData.notes || ''
     };
 
-    // Store order in localStorage as backup
-    const localOrders = JSON.parse(localStorage.getItem('damnson_orders') || '[]');
-    localOrders.push(orderData);
-    localStorage.setItem('damnson_orders', JSON.stringify(localOrders));
+    // Check if config is loaded
+    if (typeof CONFIG === 'undefined' || !CONFIG.GOOGLE_SHEET_URL || CONFIG.GOOGLE_SHEET_URL === 'YOUR_WEB_APP_URL_HERE') {
+        alert('⚠️ Configuration error: Google Sheets URL not set. Please contact administrator.');
+        console.error('CONFIG not loaded or GOOGLE_SHEET_URL not configured');
+        return;
+    }
+
+    // Show loading state
+    const submitBtn = document.querySelector('.submit-order-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'SUBMITTING...';
+    submitBtn.disabled = true;
 
     // Send order to Google Sheets
-    if (GOOGLE_SHEET_URL !== 'YOUR_WEB_APP_URL_HERE') {
-        fetch(GOOGLE_SHEET_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(orderData)
-        }).then(() => {
-            console.log('Order sent to Google Sheets');
-        }).catch(error => {
-            console.error('Error sending to Google Sheets:', error);
-            // Order is still saved in localStorage as backup
-        });
-    }
-    
-    // Create order message
-    const orderMessage = `
-🛍️ NEW ORDER - DAMNSON CLOTHING
-
-👤 CUSTOMER INFORMATION:
-Name: ${formData.customerName}
-Contact: ${formData.contactNumber}
-Address: ${formData.address}
-
-📦 ORDER DETAILS:
-Product: ${formData.product}
-Size: ${formData.size}
-Quantity: ${formData.quantity}
-Total: ${formData.total}
-
-💳 Payment Method: ${formData.paymentMode}
-
-📝 Additional Notes: ${formData.notes || 'None'}
-
-Order #: ${orderData.orderNumber}
----
-Please confirm this order via Facebook Messenger.
-    `;
-    
-    // Store order in localStorage for backup
-    const orders = JSON.parse(localStorage.getItem('damnson_orders') || '[]');
-    orders.push({
-        ...formData,
-        timestamp: new Date().toISOString(),
-        orderNumber: `DS${Date.now()}`
+    fetch(CONFIG.GOOGLE_SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(orderData)
+    }).then(() => {
+        console.log('Order sent to Google Sheets successfully');
+        
+        // Close order modal
+        closeModal('orderModal');
+        
+        // Show success message
+        showSuccessMessage();
+        
+        // Reset form
+        document.getElementById('orderForm').reset();
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        
+    }).catch(error => {
+        console.error('Error sending to Google Sheets:', error);
+        alert('⚠️ Failed to submit order. Please try again or contact us directly.');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
     });
-    localStorage.setItem('damnson_orders', JSON.stringify(orders));
-    
-    // Open WhatsApp with pre-filled message
-    const whatsappNumber = '639513253801'; // Philippine number format
-    const encodedMessage = encodeURIComponent(orderMessage);
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+}
     
     // Close order modal
     closeModal('orderModal');

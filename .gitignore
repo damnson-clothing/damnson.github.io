@@ -1,0 +1,23 @@
+# Git ignore file for DamnSon Clothing
+
+# Sensitive configuration
+config.js
+
+# System files
+.DS_Store
+Thumbs.db
+*.log
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if you add them later)
+node_modules/
+
+# Build files
+dist/
+build/
