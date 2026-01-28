@@ -24,7 +24,7 @@ const products = {
 
 // Google Sheets Configuration
 // IMPORTANT: Replace with your Google Apps Script Web App URL
-const GOOGLE_SHEET_URL = 'YOUR_WEB_APP_URL_HERE';
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxG6lGszAHb4C9ajwnMH9ZUC2f2fqFnFUswn-b0cNZfPOH-vmQN1INU92fHOXA0cFMDlQ/exec';
 
 let currentProduct = null;
 let selectedSize = null;
