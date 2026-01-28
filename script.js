@@ -32,6 +32,91 @@ const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxG6lGszAHb4C9
 let currentProduct = null;
 let selectedSize = null;
 let orderData = {};
+let inventoryData = [];
+
+// Load inventory on page load
+window.addEventListener('DOMContentLoaded', function() {
+    loadInventory();
+});
+
+// Inventory Management
+function loadInventory() {
+    if (typeof CONFIG === 'undefined' || !CONFIG.GOOGLE_SHEET_URL || CONFIG.GOOGLE_SHEET_URL === 'YOUR_WEB_APP_URL_HERE') {
+        console.log('Inventory not configured');
+        return;
+    }
+
+    fetch(CONFIG.GOOGLE_SHEET_URL + '?action=getInventory')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                inventoryData = data.inventory;
+                updateProductStockDisplay();
+            }
+        })
+        .catch(error => {
+            console.error('Failed to load inventory:', error);
+        });
+}
+
+function getStock(product, size) {
+    const item = inventoryData.find(i => i.product === product && i.size === size);
+    return item ? item.stock : 0;
+}
+
+function getTotalStock(product) {
+    return inventoryData
+        .filter(i => i.product === product)
+        .reduce((sum, i) => sum + i.stock, 0);
+}
+
+function updateProductStockDisplay() {
+    // Update SELF-MADE stock
+    const selfMadeStock = getTotalStock('SELF-MADE');
+    const selfMadeCard = document.querySelector('[data-product="self-made"]');
+    if (selfMadeCard) {
+        updateProductCardStock(selfMadeCard, selfMadeStock);
+    }
+
+    // Update RESURGENCE stock
+    const resurgenceStock = getTotalStock('RESURGENCE');
+    const resurgenceCard = document.querySelector('[data-product="resurgence"]');
+    if (resurgenceCard) {
+        updateProductCardStock(resurgenceCard, resurgenceStock);
+    }
+}
+
+function updateProductCardStock(card, totalStock) {
+    // Remove existing stock badge if any
+    const existingBadge = card.querySelector('.stock-badge');
+    if (existingBadge) existingBadge.remove();
+
+    // Add stock badge
+    const productInfo = card.querySelector('.product-info');
+    const stockBadge = document.createElement('p');
+    stockBadge.className = 'stock-badge';
+    
+    if (totalStock === 0) {
+        stockBadge.textContent = 'OUT OF STOCK';
+        stockBadge.classList.add('stock-out');
+        // Disable order button
+        const orderBtn = card.querySelector('.order-btn');
+        if (orderBtn) {
+            orderBtn.disabled = true;
+            orderBtn.style.opacity = '0.5';
+            orderBtn.style.cursor = 'not-allowed';
+        }
+    } else if (totalStock < 10) {
+        stockBadge.textContent = `Only ${totalStock} items left!`;
+        stockBadge.classList.add('stock-low');
+    } else {
+        stockBadge.textContent = `${totalStock} in stock`;
+        stockBadge.classList.add('stock-available');
+    }
+    
+    const priceElement = productInfo.querySelector('.product-price');
+    priceElement.after(stockBadge);
+}
 
 // Mobile Navigation Toggle
 const hamburger = document.querySelector('.hamburger');
@@ -76,6 +161,9 @@ function openProductModal(productId) {
         thumbnailContainer.appendChild(thumb);
     });
     
+    // Update size buttons with stock info
+    updateSizeButtonsStock(product.name);
+    
     // Reset size selection
     document.querySelectorAll('.size-btn').forEach(btn => {
         btn.classList.remove('selected');
@@ -83,6 +171,32 @@ function openProductModal(productId) {
     selectedSize = null;
     
     modal.style.display = 'block';
+}
+
+function updateSizeButtonsStock(productName) {
+    const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+    document.querySelectorAll('.size-btn').forEach(btn => {
+        const size = btn.dataset.size;
+        const stock = getStock(productName, size);
+        
+        // Update button text with stock
+        if (stock === 0) {
+            btn.textContent = `${size} (Out)`;
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.style.cursor = 'not-allowed';
+        } else if (stock < 5) {
+            btn.textContent = `${size} (${stock})`;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        } else {
+            btn.textContent = size;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        }
+    });
 }
 
 function changeMainImage(imgSrc, thumbnail) {
@@ -152,11 +266,18 @@ document.getElementById('orderForm').addEventListener('submit', function(e) {
         address: document.getElementById('address').value,
         product: document.getElementById('productName').value,
         size: document.getElementById('size').value,
-        quantity: document.getElementById('quantity').value,
+        quantity: parseInt(document.getElementById('quantity').value),
         paymentMode: document.getElementById('paymentMode').value,
         notes: document.getElementById('notes').value,
         total: document.getElementById('total').textContent
     };
+    
+    // Check stock availability
+    const availableStock = getStock(formData.product, formData.size);
+    if (availableStock < formData.quantity) {
+        alert(`Sorry, only ${availableStock} items available in size ${formData.size}. Please adjust your quantity or choose a different size.`);
+        return;
+    }
     
     // Send order to Facebook
     sendOrderToFacebook(formData);
@@ -198,9 +319,32 @@ function sendOrderToFacebook(formData) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(orderData)
+        body: JSON.stringify({
+            action: 'addOrder',
+            ...orderData
+        })
     }).then(() => {
         console.log('Order sent to Google Sheets successfully');
+        
+        // Decrease stock after successful order
+        return fetch(CONFIG.GOOGLE_SHEET_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'decreaseStock',
+                product: orderData.product,
+                size: orderData.size,
+                quantity: orderData.quantity
+            })
+        });
+    }).then(() => {
+        console.log('Stock updated successfully');
+        
+        // Reload inventory
+        loadInventory();
         
         // Close order modal
         closeModal('orderModal');

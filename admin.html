@@ -263,6 +263,91 @@
             color: var(--text-primary);
         }
 
+        /* Inventory Grid */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .inventory-card {
+            background-color: var(--secondary-bg);
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .inventory-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .size-stock-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .size-stock-row:last-child {
+            border-bottom: none;
+        }
+
+        .size-label {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .stock-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stock-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .stock-input {
+            width: 80px;
+            padding: 0.5rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .btn-update-stock {
+            padding: 0.5rem 1rem;
+            background-color: var(--accent-color);
+            color: var(--primary-bg);
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .btn-update-stock:hover {
+            transform: translateY(-2px);
+        }
+
+        .stock-low {
+            color: #ff9800;
+        }
+
+        .stock-out {
+            color: #ff0000;
+        }
+
         @media screen and (max-width: 768px) {
             .admin-header h1 {
                 font-size: 2rem;
@@ -491,6 +576,20 @@
                 <p>Orders will appear here once customers place them.</p>
             </div>
         </div>
+
+        <!-- Inventory Section -->
+        <div class="orders-section" style="margin-top: 3rem;">
+            <div class="section-header">
+                <h2>INVENTORY MANAGEMENT</h2>
+                <div class="action-buttons">
+                    <button class="btn btn-refresh" onclick="loadInventory()">↻ REFRESH</button>
+                </div>
+            </div>
+
+            <div class="inventory-grid" id="inventoryGrid">
+                <!-- Inventory will be inserted here -->
+            </div>
+        </div>
     </div>
 
     <!-- Order Detail Modal -->
@@ -545,6 +644,7 @@
                 sessionStorage.setItem('admin_authenticated', 'true');
                 showDashboard();
                 loadOrders();
+                loadInventory();
             } else {
                 errorMessage.style.display = 'block';
                 document.getElementById('passwordInput').value = '';
@@ -744,6 +844,109 @@
             if (!confirm('⚠️ WARNING: This will refresh the view. To permanently delete orders, you must delete them manually from Google Sheets. Continue?')) return;
             
             loadOrders();
+        }
+
+        // Inventory Management Functions
+        let inventoryData = [];
+
+        function loadInventory() {
+            if (typeof CONFIG === 'undefined' || !CONFIG.GOOGLE_SHEET_URL || CONFIG.GOOGLE_SHEET_URL === 'YOUR_WEB_APP_URL_HERE') {
+                console.error('CONFIG not loaded or GOOGLE_SHEET_URL not configured');
+                return;
+            }
+
+            // Fetch inventory from Google Sheets
+            fetch(CONFIG.GOOGLE_SHEET_URL + '?action=getInventory')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        inventoryData = data.inventory;
+                        displayInventory();
+                    } else {
+                        console.error('Error loading inventory:', data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Failed to load inventory:', error);
+                });
+        }
+
+        function displayInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            
+            // Group by product
+            const products = {};
+            inventoryData.forEach(item => {
+                if (!products[item.product]) {
+                    products[item.product] = [];
+                }
+                products[item.product].push(item);
+            });
+
+            grid.innerHTML = Object.keys(products).map(productName => {
+                const productItems = products[productName];
+                
+                return `
+                    <div class="inventory-card">
+                        <h3>${productName}</h3>
+                        ${productItems.map(item => `
+                            <div class="size-stock-row">
+                                <span class="size-label">Size ${item.size}:</span>
+                                <div class="stock-input-group">
+                                    <input 
+                                        type="number" 
+                                        class="stock-input" 
+                                        id="stock-${item.product}-${item.size}"
+                                        value="${item.stock}"
+                                        min="0"
+                                    >
+                                    <button 
+                                        class="btn-update-stock" 
+                                        onclick="updateStock('${item.product}', '${item.size}')"
+                                    >
+                                        UPDATE
+                                    </button>
+                                    <span class="stock-value ${item.stock === 0 ? 'stock-out' : item.stock < 5 ? 'stock-low' : ''}">
+                                        ${item.stock === 0 ? 'OUT' : item.stock < 5 ? 'LOW' : 'OK'}
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateStock(product, size) {
+            const inputId = `stock-${product}-${size}`;
+            const newStock = parseInt(document.getElementById(inputId).value);
+
+            if (isNaN(newStock) || newStock < 0) {
+                alert('Please enter a valid stock number (0 or greater)');
+                return;
+            }
+
+            // Send update to Google Sheets
+            fetch(CONFIG.GOOGLE_SHEET_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'updateInventory',
+                    product: product,
+                    size: size,
+                    stock: newStock
+                })
+            }).then(() => {
+                console.log('Stock updated successfully');
+                // Reload inventory to show updated values
+                setTimeout(() => loadInventory(), 1000);
+            }).catch(error => {
+                console.error('Error updating stock:', error);
+                alert('Failed to update stock. Please try again.');
+            });
         }
 
         function filterOrders() {
