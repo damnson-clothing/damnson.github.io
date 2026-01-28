@@ -220,21 +220,6 @@ function sendOrderToFacebook(formData) {
         submitBtn.disabled = false;
     });
 }
-    
-    // Close order modal
-    closeModal('orderModal');
-    
-    // Show success message
-    showSuccessMessage();
-    
-    // Open WhatsApp in new tab
-    setTimeout(() => {
-        window.open(whatsappUrl, '_blank');
-    }, 1000);
-    
-    // Reset form
-    document.getElementById('orderForm').reset();
-}
 
 function showSuccessMessage() {
     const successMsg = document.getElementById('successMessage');
