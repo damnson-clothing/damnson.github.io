@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DamnSon Clothing - Don't Settle For Ordinary Streetwear</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="assets/mainlogo.jpg" alt="DamnSon Clothing">
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">HOME</a></li>
+                <li><a href="#collection" class="nav-link">COLLECTION</a></li>
+                <li><a href="#about" class="nav-link">ABOUT</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="brand-name">DAMNSON CLOTHING</h1>
+            <p class="motto">DON'T SETTLE FOR ORDINARY STREETWEAR</p>
+            <a href="#collection" class="cta-btn">EXPLORE COLLECTION</a>
+        </div>
+        <div class="hero-image">
+            <img src="assets/cover photo.jpg" alt="DamnSon Clothing Collection">
+        </div>
+    </section>
+
+    <!-- Collection Section -->
+    <section id="collection" class="collection">
+        <div class="container">
+            <h2 class="section-title">LATEST DROPS</h2>
+            <div class="products-grid">
+                <!-- Product 1: Self-Made -->
+                <div class="product-card" data-product="self-made">
+                    <div class="product-image-wrapper">
+                        <img src="assets/product 1.jpg" alt="Self-Made Tee" class="product-image main-image">
+                        <img src="assets/product 1 - 1.jpg" alt="Self-Made Tee Detail" class="product-image hover-image">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn" onclick="openProductModal('self-made')">QUICK VIEW</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">SELF-MADE</h3>
+                        <p class="product-price">₱699.00</p>
+                        <button class="order-btn" onclick="openOrderForm('self-made', 'SELF-MADE', '699.00')">ORDER NOW</button>
+                    </div>
+                </div>
+
+                <!-- Product 2: Resurgence -->
+                <div class="product-card" data-product="resurgence">
+                    <div class="product-image-wrapper">
+                        <img src="assets/product 2.jpg" alt="Resurgence Tee" class="product-image main-image">
+                        <img src="assets/product 2 - 2.jpg" alt="Resurgence Tee Detail" class="product-image hover-image">
+                        <div class="product-overlay">
+                            <button class="quick-view-btn" onclick="openProductModal('resurgence')">QUICK VIEW</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">RESURGENCE</h3>
+                        <p class="product-price">₱699.00</p>
+                        <button class="order-btn" onclick="openOrderForm('resurgence', 'RESURGENCE', '699.00')">ORDER NOW</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <h2 class="section-title">ABOUT US</h2>
+                <p class="about-text">
+                    DamnSon Clothing is more than just a brand – it's a movement. We create premium streetwear 
+                    for those who refuse to blend in. Each piece is designed with passion and crafted for 
+                    individuals who dare to be different.
+                </p>
+                <p class="about-text">
+                    Our mission is simple: provide high-quality, unique streetwear that speaks to your 
+                    individuality. Don't settle for ordinary. Be DamnSon.
+                </p>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/profile.php?id=100063491243494" target="_blank" class="social-btn">
+                        FOLLOW US ON FACEBOOK
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-body">
+                <div class="modal-gallery">
+                    <div class="main-image-container">
+                        <img id="modalMainImage" src="" alt="Product">
+                    </div>
+                    <div class="thumbnail-container">
+                        <!-- Thumbnails will be populated by JS -->
+                    </div>
+                </div>
+                <div class="modal-details">
+                    <h2 id="modalProductName"></h2>
+                    <p class="modal-price" id="modalPrice"></p>
+                    <p class="modal-description" id="modalDescription"></p>
+                    <div class="size-selector">
+                        <label>SIZE:</label>
+                        <div class="size-options">
+                            <button class="size-btn" data-size="S">S</button>
+                            <button class="size-btn" data-size="M">M</button>
+                            <button class="size-btn" data-size="L">L</button>
+                            <button class="size-btn" data-size="XL">XL</button>
+                            <button class="size-btn" data-size="XXL">XXL</button>
+                        </div>
+                    </div>
+                    <button class="modal-order-btn" id="modalOrderBtn">ORDER NOW</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Form Modal -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content order-modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="order-form-container">
+                <h2>COMPLETE YOUR ORDER</h2>
+                <form id="orderForm">
+                    <div class="form-group">
+                        <label for="customerName">FULL NAME *</label>
+                        <input type="text" id="customerName" name="customerName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactNumber">CONTACT NUMBER *</label>
+                        <input type="tel" id="contactNumber" name="contactNumber" placeholder="09XX XXX XXXX" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">COMPLETE ADDRESS *</label>
+                        <textarea id="address" name="address" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>PRODUCT *</label>
+                        <input type="text" id="productName" name="productName" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="size">SIZE *</label>
+                        <select id="size" name="size" required>
+                            <option value="">Select Size</option>
+                            <option value="S">Small (S)</option>
+                            <option value="M">Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                            <option value="XXL">2XL (XXL)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantity">QUANTITY *</label>
+                        <input type="number" id="quantity" name="quantity" min="1" value="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="paymentMode">MODE OF PAYMENT *</label>
+                        <select id="paymentMode" name="paymentMode" required>
+                            <option value="">Select Payment Method</option>
+                            <option value="Cash on Delivery">Cash on Delivery (COD)</option>
+                            <option value="GCash">GCash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="PayMaya">PayMaya</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">ADDITIONAL NOTES (Optional)</label>
+                        <textarea id="notes" name="notes" rows="3" placeholder="Any special instructions or requests..."></textarea>
+                    </div>
+
+                    <div class="order-summary">
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">₱0.00</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>TOTAL:</span>
+                            <span id="total">₱0.00</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="submit-order-btn">SUBMIT ORDER</button>
+                    <p class="form-note">* We will contact you via WhatsApp to confirm your order details.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Message -->
+    <div id="successMessage" class="success-message">
+        <div class="success-content">
+            <div class="success-icon">✓</div>
+            <h3>ORDER SUBMITTED!</h3>
+            <p>We'll contact you on WhatsApp shortly to confirm your order.</p>
+            <button onclick="closeSuccessMessage()" class="close-success-btn">CONTINUE SHOPPING</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>DAMNSON CLOTHING</h4>
+                    <p>Don't settle for ordinary streetwear</p>
+                </div>
+                <div class="footer-section">
+                    <h4>CONNECT</h4>
+                    <a href="https://www.facebook.com/profile.php?id=100063491243494" target="_blank">Facebook</a>
+                </div>
+                <div class="footer-section">
+                    <h4>INFO</h4>
+                    <p>For inquiries, message us on Facebook</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 DamnSon Clothing. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
