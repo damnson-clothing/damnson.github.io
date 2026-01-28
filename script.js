@@ -34,7 +34,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
 // Inventory Management
 function loadInventory() {
-    if (typeof CONFIG === 'undefined' || !CONFIG.GOOGLE_SHEET_URL || CONFIG.GOOGLE_SHEET_URL === 'YOUR_WEB_APP_URL_HERE') {
+    if (typeof CONFIG === 'undefined' || !CONFIG.GOOGLE_SHEET_URL || CONFIG.GOOGLE_SHEET_URL === 'https://script.google.com/macros/s/AKfycbxG6lGszAHb4C9ajwnMH9ZUC2f2fqFnFUswn-b0cNZfPOH-vmQN1INU92fHOXA0cFMDlQ/exec') {
         console.log('Inventory not configured');
         return;
     }
