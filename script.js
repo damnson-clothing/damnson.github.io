@@ -22,6 +22,13 @@ const products = {
     }
 };
 
+<<<<<<< HEAD
+=======
+// Google Sheets Configuration
+// IMPORTANT: Replace with your Google Apps Script Web App URL
+const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbxG6lGszAHb4C9ajwnMH9ZUC2f2fqFnFUswn-b0cNZfPOH-vmQN1INU92fHOXA0cFMDlQ/exec';
+
+>>>>>>> 5f34c720180022db61d92829ec4e4b0e636b7478
 let currentProduct = null;
 let selectedSize = null;
 let orderData = {};
