@@ -5,7 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - DamnSon Clothing</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="config.js"></script>
+    <script>
+        // Configuration - embedded for GitHub Pages deployment
+        const CONFIG = {
+            GOOGLE_SHEET_URL: 'https://script.google.com/macros/s/AKfycbxG6lGszAHb4C9ajwnMH9ZUC2f2fqFnFUswn-b0cNZfPOH-vmQN1INU92fHOXA0cFMDlQ/exec',
+            ADMIN_PASSWORD: 'damnson2026',
+            API_KEY: 'damnson_secure_2026_key'
+        };
+    </script>
     <style>
         .admin-container {
             max-width: 1400px;
@@ -668,7 +675,7 @@
             }
 
             // Load from Google Sheets
-            fetch(CONFIG.GOOGLE_SHEET_URL)
+            fetch(CONFIG.GOOGLE_SHEET_URL + '?apiKey=' + CONFIG.API_KEY)
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
@@ -845,7 +852,7 @@
             }
 
             // Fetch inventory from Google Sheets
-            fetch(CONFIG.GOOGLE_SHEET_URL + '?action=getInventory')
+            fetch(CONFIG.GOOGLE_SHEET_URL + '?action=getInventory&apiKey=' + CONFIG.API_KEY)
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
@@ -924,6 +931,7 @@
                 },
                 body: JSON.stringify({
                     action: 'updateInventory',
+                    apiKey: CONFIG.API_KEY,
                     product: product,
                     size: size,
                     stock: newStock

@@ -39,7 +39,7 @@ function loadInventory() {
         return;
     }
 
-    fetch(CONFIG.GOOGLE_SHEET_URL + '?action=getInventory')
+    fetch(CONFIG.GOOGLE_SHEET_URL + '?action=getInventory&apiKey=' + CONFIG.API_KEY)
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
@@ -314,6 +314,7 @@ function sendOrderToFacebook(formData) {
         },
         body: JSON.stringify({
             action: 'addOrder',
+            apiKey: CONFIG.API_KEY,
             ...orderData
         })
     }).then(() => {
@@ -328,6 +329,7 @@ function sendOrderToFacebook(formData) {
             },
             body: JSON.stringify({
                 action: 'decreaseStock',
+                apiKey: CONFIG.API_KEY,
                 product: orderData.product,
                 size: orderData.size,
                 quantity: orderData.quantity
