@@ -12,7 +12,6 @@
 </head>
 <body>
 
-  <!-- ── Login Screen ──────────────────────────────────── -->
   <div id="loginScreen" class="login-screen">
     <div class="login-box">
       <h2>🔐 ADMIN LOGIN</h2>
@@ -26,7 +25,6 @@
     </div>
   </div>
 
-  <!-- ── Admin Container ───────────────────────────────── -->
   <div class="admin-container" id="adminContainer">
 
     <div class="admin-header">
@@ -35,19 +33,14 @@
       <button class="logout-btn" onclick="logout()">LOGOUT</button>
     </div>
 
-    <!-- Tabs -->
     <div class="admin-tabs">
       <button class="admin-tab active" onclick="switchTab('orders', this)">📦 ORDERS</button>
       <button class="admin-tab"        onclick="switchTab('products', this)">👕 PRODUCTS</button>
       <button class="admin-tab"        onclick="switchTab('inventory', this)">📊 INVENTORY</button>
     </div>
 
-    <!-- ══════════════════════════════════════════════════
-         TAB: ORDERS
-    ══════════════════════════════════════════════════════ -->
     <div id="tab-orders" class="tab-content active">
 
-      <!-- Stats -->
       <div class="stats-grid" style="margin-top:1.5rem;">
         <div class="stat-card">
           <h3>TOTAL ORDERS</h3>
@@ -129,9 +122,6 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════
-         TAB: PRODUCTS CMS
-    ══════════════════════════════════════════════════════ -->
     <div id="tab-products" class="tab-content">
       <div class="panel" style="margin-top:1.5rem;">
         <div class="panel-header">
@@ -167,9 +157,6 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════
-         TAB: INVENTORY
-    ══════════════════════════════════════════════════════ -->
     <div id="tab-inventory" class="tab-content">
       <div class="panel" style="margin-top:1.5rem;">
         <div class="panel-header">
@@ -186,10 +173,7 @@
       </div>
     </div>
 
-  </div><!-- /admin-container -->
-
-  <!-- ── Product Form Modal ─────────────────────────────── -->
-  <div id="productFormModal" class="modal">
+  </div><div id="productFormModal" class="modal">
     <div class="modal-content product-modal-content">
       <span class="close-modal" onclick="closeModal('productFormModal')">&times;</span>
       <h2 id="productFormTitle">ADD PRODUCT</h2>
@@ -239,7 +223,6 @@
           </div>
         </div>
 
-        <!-- Image URLs -->
         <div class="form-group" style="margin-top:1.5rem;">
           <label>PRODUCT IMAGES (paste public URLs)</label>
           <div class="image-inputs">
@@ -264,9 +247,6 @@
               <div class="image-preview-placeholder" id="prev4ph">Image 4 preview</div>
             </div>
           </div>
-          <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem;">
-            Upload images to your GitHub Pages <code>assets/products/</code> folder, then paste the public URL here.
-          </p>
         </div>
 
         <div class="form-actions">
@@ -277,7 +257,6 @@
     </div>
   </div>
 
-  <!-- ── Order Detail Modal ─────────────────────────────── -->
   <div id="orderDetailModal" class="modal">
     <div class="modal-content order-detail-content">
       <span class="close-modal" onclick="closeModal('orderDetailModal')">&times;</span>
@@ -286,7 +265,6 @@
     </div>
   </div>
 
-  <!-- ── Delete Confirm Modal ───────────────────────────── -->
   <div id="confirmModal" class="modal">
     <div class="modal-content" style="max-width:440px;padding:2.5rem;text-align:center;">
       <span class="close-modal" onclick="closeModal('confirmModal')">&times;</span>
@@ -300,16 +278,11 @@
   </div>
 
   <script>
-  // ============================================================
-  // DamnSon Clothing — Admin Dashboard Script
-  // ============================================================
-
   let allOrders    = [];
   let adminProducts = [];
   let inventoryData = [];
   let pendingConfirmFn = null;
 
-  // ── Auth ────────────────────────────────────────────────
   window.onload = () => {
     if (sessionStorage.getItem('ds_admin') === 'true') showDashboard();
   };
@@ -340,7 +313,6 @@
     loadInventory();
   }
 
-  // ── Tabs ────────────────────────────────────────────────
   function switchTab(name, btn) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
@@ -348,7 +320,6 @@
     btn.classList.add('active');
   }
 
-  // ── Toast ───────────────────────────────────────────────
   function toast(msg, type = 'success') {
     const el = document.createElement('div');
     el.className = `toast toast-${type}`;
@@ -357,7 +328,6 @@
     setTimeout(() => el.remove(), 3500);
   }
 
-  // ── Modal ───────────────────────────────────────────────
   function closeModal(id) {
     document.getElementById(id).style.display = 'none';
   }
@@ -366,7 +336,6 @@
     if (e.target.classList.contains('modal')) e.target.style.display = 'none';
   });
 
-  // ── Confirm dialog ───────────────────────────────────────
   function showConfirm(title, msg, fn) {
     document.getElementById('confirmTitle').textContent = title;
     document.getElementById('confirmMsg').textContent   = msg;
@@ -379,7 +348,6 @@
     if (pendingConfirmFn) { pendingConfirmFn(); pendingConfirmFn = null; }
   }
 
-  // ── API helper ───────────────────────────────────────────
   async function apiGet(action, extra = '') {
     const url = `${CONFIG.GOOGLE_SHEET_URL}?action=${action}&apiKey=${CONFIG.API_KEY}${extra}`;
     const res  = await fetch(url);
@@ -392,7 +360,6 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...body, apiKey: CONFIG.API_KEY })
     });
-    // no-cors fallback: if no response body, treat as success
     try { return await res.json(); } catch(_) { return { status: 'success' }; }
   }
 
@@ -405,9 +372,6 @@
     return { status: 'success' };
   }
 
-  // ══════════════════════════════════════════════════════════
-  //  ORDERS TAB
-  // ══════════════════════════════════════════════════════════
   async function loadOrders() {
     try {
       const data = await apiGet('getOrders');
@@ -521,7 +485,6 @@
   async function updateOrderStatus(orderNumber, status) {
     try {
       await apiPostNoCors({ action: 'updateOrderStatus', orderNumber, status });
-      // Update local state
       const order = allOrders.find(o => o.orderNumber === orderNumber);
       if (order) order.status = status;
       updateOrderStats();
@@ -585,9 +548,6 @@
     toast('CSV exported!');
   }
 
-  // ══════════════════════════════════════════════════════════
-  //  PRODUCTS TAB (CMS)
-  // ══════════════════════════════════════════════════════════
   async function loadAdminProducts() {
     try {
       const data = await apiGet('getAllProducts');
@@ -595,7 +555,6 @@
         adminProducts = data.products || [];
         renderProductsTable();
       } else {
-        // Fallback to getProducts if getAllProducts not yet deployed
         const data2 = await apiGet('getProducts');
         adminProducts = data2.products || [];
         renderProductsTable();
@@ -655,13 +614,11 @@
     }).join('');
   }
 
-  // ── Product Form ─────────────────────────────────────────
   function openProductForm(productId = null) {
     document.getElementById('productForm').reset();
     clearImagePreviews();
 
     if (productId) {
-      // Edit mode
       const p = adminProducts.find(x => x.productId === productId);
       if (!p) return;
       document.getElementById('productFormTitle').textContent = 'EDIT PRODUCT';
@@ -684,7 +641,6 @@
       });
 
     } else {
-      // Add mode
       document.getElementById('productFormTitle').textContent = 'ADD PRODUCT';
       document.getElementById('pfMode').value = 'add';
       document.getElementById('pfProductId').value = '';
@@ -695,6 +651,7 @@
     document.getElementById('productFormModal').style.display = 'block';
   }
 
+  // --- NEW FIXED saveProduct ---
   async function saveProduct(e) {
     e.preventDefault();
     const mode = document.getElementById('pfMode').value;
@@ -702,9 +659,14 @@
     btn.textContent = 'SAVING...';
     btn.disabled    = true;
 
+    const currentId = document.getElementById('pfProductId').value;
+    const finalProductId = (mode === 'add' && !currentId) 
+        ? 'PROD-' + Date.now() 
+        : currentId;
+
     const payload = {
       action:      mode === 'add' ? 'addProduct' : 'updateProduct',
-      productId:   document.getElementById('pfProductId').value,
+      productId:   finalProductId,
       name:        document.getElementById('pfName').value.trim(),
       price:       parseFloat(document.getElementById('pfPrice').value),
       description: document.getElementById('pfDesc').value.trim(),
@@ -723,7 +685,7 @@
       toast(mode === 'add' ? 'Product added!' : 'Product updated!');
       closeModal('productFormModal');
       await loadAdminProducts();
-      await loadInventory(); // refresh inventory if new product was added
+      await loadInventory(); 
     } catch (err) {
       toast('Failed to save product', 'error');
       console.error(err);
@@ -763,7 +725,6 @@
     }
   }
 
-  // ── Image preview helpers ─────────────────────────────────
   function previewImage(inputId, previewId) {
     const url = document.getElementById(inputId).value.trim();
     showImagePreview(inputId, previewId, url);
@@ -791,9 +752,6 @@
     });
   }
 
-  // ══════════════════════════════════════════════════════════
-  //  INVENTORY TAB
-  // ══════════════════════════════════════════════════════════
   async function loadInventory() {
     try {
       const data = await apiGet('getInventory');
@@ -806,6 +764,7 @@
     }
   }
 
+  // --- NEW FIXED renderInventoryGrid ---
   function renderInventoryGrid() {
     const grid  = document.getElementById('inventoryGrid');
     const noEl  = document.getElementById('noInventory');
@@ -817,7 +776,6 @@
     }
     noEl.style.display = 'none';
 
-    // Group by product
     const grouped = {};
     inventoryData.forEach(item => {
       const key = item.product || item.productId;
@@ -829,10 +787,13 @@
       <div class="inventory-card">
         <h3>${productName}</h3>
         ${items.map(item => {
-          const stock = Number(item.stock);
+          const parsedStock = Number(item.stock);
+          const stock       = isNaN(parsedStock) ? 0 : parsedStock;
+          
           const cls   = stock === 0 ? 'stock-out' : stock < 5 ? 'stock-low' : 'stock-ok';
           const label = stock === 0 ? 'OUT' : stock < 5 ? 'LOW' : 'OK';
           const pid   = item.productId || item.product;
+          
           return `
             <div class="size-stock-row">
               <span class="size-label">${item.size}</span>
@@ -862,7 +823,6 @@
     try {
       await apiPostNoCors({ action: 'updateInventory', productId, size, stock: newStock });
       toast(`Stock updated: ${productId} ${size} → ${newStock}`);
-      // Update local
       const item = inventoryData.find(i =>
         (i.productId === productId || i.product === productId) && i.size === size
       );
