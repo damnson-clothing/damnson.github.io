@@ -1,1020 +1,877 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - DamnSon Clothing</title>
-    <link rel="stylesheet" href="styles.css">
-    <script>
-        // Configuration - embedded for GitHub Pages deployment
-        const CONFIG = {
-            GOOGLE_SHEET_URL: 'https://script.google.com/macros/s/AKfycbxG6lGszAHb4C9ajwnMH9ZUC2f2fqFnFUswn-b0cNZfPOH-vmQN1INU92fHOXA0cFMDlQ/exec',
-            ADMIN_PASSWORD: 'damnson2026',
-            API_KEY: 'damnson_secure_2026_key'
-        };
-    </script>
-    <style>
-        .admin-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-            min-height: 100vh;
-        }
-
-        .admin-header {
-            background-color: var(--secondary-bg);
-            padding: 2rem;
-            margin: -2rem -2rem 2rem -2rem;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .admin-header h1 {
-            font-size: 3rem;
-            letter-spacing: 3px;
-            margin-bottom: 0.5rem;
-        }
-
-        .admin-header p {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-        .stat-card {
-            background-color: var(--card-bg);
-            padding: 2rem;
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
-
-        .stat-card h3 {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
-            letter-spacing: 2px;
-        }
-
-        .stat-number {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--accent-color);
-            font-family: 'Bebas Neue', cursive;
-        }
-
-        .orders-section {
-            background-color: var(--card-bg);
-            padding: 2rem;
-            border: 1px solid var(--border-color);
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .section-header h2 {
-            font-size: 2rem;
-            letter-spacing: 3px;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            font-weight: 600;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.9rem;
-        }
-
-        .btn-export {
-            background-color: #00ff00;
-            color: var(--primary-bg);
-        }
-
-        .btn-clear {
-            background-color: #ff0000;
-            color: white;
-        }
-
-        .btn-refresh {
-            background-color: var(--accent-color);
-            color: var(--primary-bg);
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-
-        .filter-bar {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-bar select,
-        .filter-bar input {
-            padding: 0.75rem;
-            background-color: var(--secondary-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            font-size: 0.9rem;
-        }
-
-        .orders-table {
-            width: 100%;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 800px;
-        }
-
-        thead {
-            background-color: var(--secondary-bg);
-        }
-
-        th {
-            padding: 1rem;
-            text-align: left;
-            font-weight: 700;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        tbody tr {
-            transition: var(--transition);
-        }
-
-        tbody tr:hover {
-            background-color: var(--secondary-bg);
-        }
-
-        .order-number {
-            font-weight: 700;
-            color: var(--accent-color);
-            font-family: monospace;
-        }
-
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 3px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: inline-block;
-        }
-
-        .status-pending {
-            background-color: #ffa500;
-            color: var(--primary-bg);
-        }
-
-        .status-completed {
-            background-color: #00ff00;
-            color: var(--primary-bg);
-        }
-
-        .no-orders {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--text-secondary);
-        }
-
-        .no-orders h3 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .action-cell {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .btn-small {
-            padding: 0.5rem 1rem;
-            font-size: 0.8rem;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            font-weight: 600;
-        }
-
-        .btn-view {
-            background-color: var(--accent-color);
-            color: var(--primary-bg);
-        }
-
-        .btn-delete {
-            background-color: #ff0000;
-            color: white;
-        }
-
-        .btn-whatsapp {
-            background-color: #25D366;
-            color: white;
-        }
-
-        /* Order Detail Modal */
-        .order-detail {
-            background-color: var(--secondary-bg);
-            padding: 2rem;
-            border: 1px solid var(--border-color);
-            margin-top: 1rem;
-        }
-
-        .order-detail h4 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            letter-spacing: 2px;
-        }
-
-        .detail-row {
-            display: grid;
-            grid-template-columns: 150px 1fr;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: var(--text-secondary);
-        }
-
-        .detail-value {
-            color: var(--text-primary);
-        }
-
-        /* Inventory Grid */
-        .inventory-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .inventory-card {
-            background-color: var(--secondary-bg);
-            padding: 1.5rem;
-            border: 1px solid var(--border-color);
-        }
-
-        .inventory-card h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            letter-spacing: 2px;
-            border-bottom: 2px solid var(--accent-color);
-            padding-bottom: 0.5rem;
-        }
-
-        .size-stock-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .size-stock-row:last-child {
-            border-bottom: none;
-        }
-
-        .size-label {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .stock-input-group {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .stock-value {
-            font-size: 1.2rem;
-            font-weight: 700;
-            min-width: 40px;
-            text-align: center;
-        }
-
-        .stock-input {
-            width: 80px;
-            padding: 0.5rem;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            text-align: center;
-            font-size: 1rem;
-        }
-
-        .btn-update-stock {
-            padding: 0.5rem 1rem;
-            background-color: var(--accent-color);
-            color: var(--primary-bg);
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.9rem;
-        }
-
-        .btn-update-stock:hover {
-            transform: translateY(-2px);
-        }
-
-        .stock-low {
-            color: #ff9800;
-        }
-
-        .stock-out {
-            color: #ff0000;
-        }
-
-        @media screen and (max-width: 768px) {
-            .admin-header h1 {
-                font-size: 2rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .section-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .orders-table {
-                overflow-x: scroll;
-            }
-
-            .action-cell {
-                flex-direction: column;
-            }
-        }
-        /* Login Screen */
-        .login-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--primary-bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .login-box {
-            background-color: var(--card-bg);
-            padding: 3rem;
-            border: 1px solid var(--border-color);
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-        }
-
-        .login-box h2 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            letter-spacing: 3px;
-        }
-
-        .login-box p {
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-        }
-
-        .login-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .login-input {
-            padding: 1rem;
-            background-color: var(--secondary-bg);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .login-input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
-
-        .login-btn {
-            padding: 1rem;
-            background-color: var(--accent-color);
-            color: var(--primary-bg);
-            border: none;
-            font-weight: 700;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 1rem;
-        }
-
-        .login-btn:hover {
-            transform: translateY(-3px);
-        }
-
-        .error-message {
-            color: #ff0000;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-            display: none;
-        }
-
-        .admin-container {
-            display: none;
-        }
-
-        .admin-container.authenticated {
-            display: block;
-        }
-
-        .logout-btn {
-            background-color: #ff0000;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            font-weight: 600;
-            letter-spacing: 1px;
-            cursor: pointer;
-            transition: var(--transition);
-            position: absolute;
-            top: 2rem;
-            right: 2rem;
-        }
-
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            opacity: 0.9;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — DamnSon Clothing</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="config.js"></script>
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="loginScreen" class="login-screen">
-        <div class="login-box">
-            <h2>🔐 ADMIN LOGIN</h2>
-            <p>Enter password to access dashboard</p>
-            <form class="login-form" onsubmit="login(event)">
-                <input 
-                    type="password" 
-                    id="passwordInput" 
-                    class="login-input" 
-                    placeholder="Enter admin password"
-                    autocomplete="off"
-                    required
-                >
-                <button type="submit" class="login-btn">LOGIN</button>
-                <div id="errorMessage" class="error-message">Incorrect password. Try again.</div>
-            </form>
-        </div>
+
+  <!-- ── Login Screen ──────────────────────────────────── -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-box">
+      <h2>🔐 ADMIN LOGIN</h2>
+      <p>Enter password to access dashboard</p>
+      <form class="login-form" onsubmit="login(event)">
+        <input type="password" id="passwordInput" class="login-input"
+          placeholder="Enter admin password" autocomplete="off" required>
+        <button type="submit" class="login-btn">LOGIN</button>
+        <div id="errorMessage" class="error-message">Incorrect password. Try again.</div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Admin Container ───────────────────────────────── -->
+  <div class="admin-container" id="adminContainer">
+
+    <div class="admin-header">
+      <h1>🔐 ADMIN DASHBOARD</h1>
+      <p>DamnSon Clothing — Management System</p>
+      <button class="logout-btn" onclick="logout()">LOGOUT</button>
     </div>
 
-    <div class="admin-container" id="adminContainer">
-        <div class="admin-header">
-            <h1>🔐 ADMIN DASHBOARD</h1>
-            <p>DamnSon Clothing - Order Management System</p>
-            <button class="logout-btn" onclick="logout()">LOGOUT</button>
-        </div>
-
-        <!-- Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>TOTAL ORDERS</h3>
-                <div class="stat-number" id="totalOrders">0</div>
-            </div>
-            <div class="stat-card">
-                <h3>PENDING ORDERS</h3>
-                <div class="stat-number" id="pendingOrders">0</div>
-            </div>
-            <div class="stat-card">
-                <h3>TOTAL REVENUE</h3>
-                <div class="stat-number" id="totalRevenue">₱0</div>
-            </div>
-            <div class="stat-card">
-                <h3>TODAY'S ORDERS</h3>
-                <div class="stat-number" id="todayOrders">0</div>
-            </div>
-        </div>
-
-        <!-- Orders Section -->
-        <div class="orders-section">
-            <div class="section-header">
-                <h2>ALL ORDERS</h2>
-                <div class="action-buttons">
-                    <button class="btn btn-refresh" onclick="loadOrders()">↻ REFRESH</button>
-                    <button class="btn btn-export" onclick="exportToCSV()">↓ EXPORT CSV</button>
-                    <button class="btn btn-clear" onclick="clearAllOrders()">🗑 CLEAR ALL</button>
-                </div>
-            </div>
-
-            <div class="filter-bar">
-                <select id="filterProduct" onchange="filterOrders()">
-                    <option value="">All Products</option>
-                    <option value="SELF-MADE">Self-Made</option>
-                    <option value="RESURGENCE">Resurgence</option>
-                </select>
-                <select id="filterPayment" onchange="filterOrders()">
-                    <option value="">All Payments</option>
-                    <option value="Cash on Delivery">COD</option>
-                    <option value="GCash">GCash</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="PayMaya">PayMaya</option>
-                </select>
-                <input type="date" id="filterDate" onchange="filterOrders()">
-            </div>
-
-            <div class="orders-table">
-                <table id="ordersTable">
-                    <thead>
-                        <tr>
-                            <th>ORDER #</th>
-                            <th>DATE</th>
-                            <th>CUSTOMER</th>
-                            <th>PRODUCT</th>
-                            <th>SIZE</th>
-                            <th>QTY</th>
-                            <th>TOTAL</th>
-                            <th>PAYMENT</th>
-                            <th>ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ordersTableBody">
-                        <!-- Orders will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="noOrders" class="no-orders" style="display: none;">
-                <h3>NO ORDERS YET</h3>
-                <p>Orders will appear here once customers place them.</p>
-            </div>
-        </div>
-
-        <!-- Inventory Section -->
-        <div class="orders-section" style="margin-top: 3rem;">
-            <div class="section-header">
-                <h2>INVENTORY MANAGEMENT</h2>
-                <div class="action-buttons">
-                    <button class="btn btn-refresh" onclick="loadInventory()">↻ REFRESH</button>
-                </div>
-            </div>
-
-            <div class="inventory-grid" id="inventoryGrid">
-                <!-- Inventory will be inserted here -->
-            </div>
-        </div>
+    <!-- Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('orders', this)">📦 ORDERS</button>
+      <button class="admin-tab"        onclick="switchTab('products', this)">👕 PRODUCTS</button>
+      <button class="admin-tab"        onclick="switchTab('inventory', this)">📊 INVENTORY</button>
     </div>
 
-    <!-- Order Detail Modal -->
-    <div id="orderModal" class="modal">
-        <div class="modal-content" style="max-width: 800px;">
-            <span class="close-modal" onclick="closeOrderModal()">&times;</span>
-            <div class="order-detail" id="orderDetail">
-                <!-- Order details will be inserted here -->
-            </div>
+    <!-- ══════════════════════════════════════════════════
+         TAB: ORDERS
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-orders" class="tab-content active">
+
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-top:1.5rem;">
+        <div class="stat-card">
+          <h3>TOTAL ORDERS</h3>
+          <div class="stat-number" id="statTotal">0</div>
         </div>
+        <div class="stat-card">
+          <h3>PENDING</h3>
+          <div class="stat-number" id="statPending">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>SHIPPED</h3>
+          <div class="stat-number" id="statShipped">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>TOTAL REVENUE</h3>
+          <div class="stat-number" id="statRevenue">₱0</div>
+        </div>
+        <div class="stat-card">
+          <h3>TODAY'S ORDERS</h3>
+          <div class="stat-number" id="statToday">0</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>ALL ORDERS</h2>
+          <div class="action-buttons">
+            <button class="btn btn-refresh" onclick="loadOrders()">↻ REFRESH</button>
+            <button class="btn btn-export"  onclick="exportOrdersCSV()">↓ EXPORT CSV</button>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <select id="filterProduct" onchange="filterOrders()">
+            <option value="">All Products</option>
+          </select>
+          <select id="filterStatus" onchange="filterOrders()">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="shipped">Shipped</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <select id="filterPayment" onchange="filterOrders()">
+            <option value="">All Payments</option>
+            <option value="Cash on Delivery">COD</option>
+            <option value="GCash">GCash</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+            <option value="PayMaya">PayMaya</option>
+          </select>
+          <input type="date" id="filterDate" onchange="filterOrders()">
+          <input type="text" id="filterSearch" placeholder="Search name / order #..."
+            oninput="filterOrders()" style="min-width:180px;">
+        </div>
+
+        <div class="table-wrapper">
+          <table id="ordersTable">
+            <thead>
+              <tr>
+                <th>ORDER #</th>
+                <th>DATE</th>
+                <th>CUSTOMER</th>
+                <th>PRODUCT</th>
+                <th>SIZE</th>
+                <th>QTY</th>
+                <th>TOTAL</th>
+                <th>PAYMENT</th>
+                <th>STATUS</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody id="ordersBody"></tbody>
+          </table>
+          <div id="noOrders" class="no-data" style="display:none;">
+            <h3>NO ORDERS YET</h3>
+            <p>Orders will appear here once customers place them.</p>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <script>
-        let allOrders = [];
+    <!-- ══════════════════════════════════════════════════
+         TAB: PRODUCTS CMS
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-products" class="tab-content">
+      <div class="panel" style="margin-top:1.5rem;">
+        <div class="panel-header">
+          <h2>PRODUCTS</h2>
+          <div class="action-buttons">
+            <button class="btn btn-refresh" onclick="loadAdminProducts()">↻ REFRESH</button>
+            <button class="btn btn-success" onclick="openProductForm()">+ ADD PRODUCT</button>
+          </div>
+        </div>
 
-        // Check authentication on page load
-        window.onload = function() {
-            checkAuth();
-        };
+        <div class="table-wrapper">
+          <table id="productsTable">
+            <thead>
+              <tr>
+                <th>IMAGE</th>
+                <th>ID</th>
+                <th>NAME</th>
+                <th>PRICE</th>
+                <th>STATUS</th>
+                <th>FEATURED</th>
+                <th>BADGE</th>
+                <th>ORDER</th>
+                <th>ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody id="productsBody"></tbody>
+          </table>
+          <div id="noProducts" class="no-data" style="display:none;">
+            <h3>NO PRODUCTS YET</h3>
+            <p>Click "ADD PRODUCT" to add your first item.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        function checkAuth() {
-            const isAuthenticated = sessionStorage.getItem('admin_authenticated');
-            if (isAuthenticated === 'true') {
-                showDashboard();
-                loadOrders();
-            }
-        }
+    <!-- ══════════════════════════════════════════════════
+         TAB: INVENTORY
+    ══════════════════════════════════════════════════════ -->
+    <div id="tab-inventory" class="tab-content">
+      <div class="panel" style="margin-top:1.5rem;">
+        <div class="panel-header">
+          <h2>INVENTORY</h2>
+          <div class="action-buttons">
+            <button class="btn btn-refresh" onclick="loadInventory()">↻ REFRESH</button>
+          </div>
+        </div>
+        <div class="inventory-grid" id="inventoryGrid"></div>
+        <div id="noInventory" class="no-data" style="display:none;">
+          <h3>NO INVENTORY DATA</h3>
+          <p>Add products first to manage their stock.</p>
+        </div>
+      </div>
+    </div>
 
-        function login(event) {
-            event.preventDefault();
-            const password = document.getElementById('passwordInput').value;
-            const errorMessage = document.getElementById('errorMessage');
+  </div><!-- /admin-container -->
 
-            // Check if config is loaded
-            if (typeof CONFIG === 'undefined' || !CONFIG.ADMIN_PASSWORD) {
-                alert('⚠️ Configuration error: Admin password not set. Please contact administrator.');
-                return;
-            }
+  <!-- ── Product Form Modal ─────────────────────────────── -->
+  <div id="productFormModal" class="modal">
+    <div class="modal-content product-modal-content">
+      <span class="close-modal" onclick="closeModal('productFormModal')">&times;</span>
+      <h2 id="productFormTitle">ADD PRODUCT</h2>
 
-            if (password === CONFIG.ADMIN_PASSWORD) {
-                sessionStorage.setItem('admin_authenticated', 'true');
-                showDashboard();
-                loadOrders();
-                loadInventory();
-            } else {
-                errorMessage.style.display = 'block';
-                document.getElementById('passwordInput').value = '';
-                document.getElementById('passwordInput').focus();
-                
-                // Hide error message after 3 seconds
-                setTimeout(() => {
-                    errorMessage.style.display = 'none';
-                }, 3000);
-            }
-        }
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <input type="hidden" id="pfProductId">
+        <input type="hidden" id="pfMode" value="add">
 
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                sessionStorage.removeItem('admin_authenticated');
-                location.reload();
-            }
-        }
+        <div class="form-grid">
+          <div class="form-group">
+            <label>PRODUCT ID</label>
+            <input type="text" id="pfId" placeholder="Auto-generated" readonly>
+          </div>
+          <div class="form-group">
+            <label>NAME *</label>
+            <input type="text" id="pfName" required placeholder="e.g. SELF-MADE">
+          </div>
+          <div class="form-group">
+            <label>PRICE (₱) *</label>
+            <input type="number" id="pfPrice" required min="1" placeholder="699">
+          </div>
+          <div class="form-group">
+            <label>STATUS</label>
+            <select id="pfStatus">
+              <option value="active">Active</option>
+              <option value="draft">Draft</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>BADGE (optional)</label>
+            <input type="text" id="pfBadge" placeholder="NEW / LIMITED / etc.">
+          </div>
+          <div class="form-group">
+            <label>SORT ORDER</label>
+            <input type="number" id="pfSort" value="99" min="1">
+          </div>
+          <div class="form-group full">
+            <label>DESCRIPTION</label>
+            <textarea id="pfDesc" rows="3" placeholder="Product description..."></textarea>
+          </div>
+          <div class="form-group full">
+            <div class="checkbox-group">
+              <input type="checkbox" id="pfFeatured">
+              <label for="pfFeatured">Featured on homepage</label>
+            </div>
+          </div>
+        </div>
 
-        function showDashboard() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('adminContainer').classList.add('authenticated');
-        }
+        <!-- Image URLs -->
+        <div class="form-group" style="margin-top:1.5rem;">
+          <label>PRODUCT IMAGES (paste public URLs)</label>
+          <div class="image-inputs">
+            <div class="image-field">
+              <input type="url" id="pfImg1" placeholder="Image 1 URL (main)" oninput="previewImage('pfImg1','prev1')">
+              <img id="prev1" class="image-preview" alt="Preview 1">
+              <div class="image-preview-placeholder" id="prev1ph">Image 1 preview</div>
+            </div>
+            <div class="image-field">
+              <input type="url" id="pfImg2" placeholder="Image 2 URL (hover)" oninput="previewImage('pfImg2','prev2')">
+              <img id="prev2" class="image-preview" alt="Preview 2">
+              <div class="image-preview-placeholder" id="prev2ph">Image 2 preview</div>
+            </div>
+            <div class="image-field">
+              <input type="url" id="pfImg3" placeholder="Image 3 URL" oninput="previewImage('pfImg3','prev3')">
+              <img id="prev3" class="image-preview" alt="Preview 3">
+              <div class="image-preview-placeholder" id="prev3ph">Image 3 preview</div>
+            </div>
+            <div class="image-field">
+              <input type="url" id="pfImg4" placeholder="Image 4 URL" oninput="previewImage('pfImg4','prev4')">
+              <img id="prev4" class="image-preview" alt="Preview 4">
+              <div class="image-preview-placeholder" id="prev4ph">Image 4 preview</div>
+            </div>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem;">
+            Upload images to your GitHub Pages <code>assets/products/</code> folder, then paste the public URL here.
+          </p>
+        </div>
 
-        // Load orders on page load
-        function loadOrders() {
-            // Check if config is loaded
-            if (typeof CONFIG === 'undefined' || !CONFIG.GOOGLE_SHEET_URL || CONFIG.GOOGLE_SHEET_URL === 'YOUR_WEB_APP_URL_HERE') {
-                alert('⚠️ Configuration error: Google Sheets URL not set. Please contact administrator.');
-                console.error('CONFIG not loaded or GOOGLE_SHEET_URL not configured');
-                return;
-            }
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('productFormModal')">CANCEL</button>
+          <button type="submit" class="btn btn-success" id="saveProductBtn">SAVE PRODUCT</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-            // Load from Google Sheets
-            fetch(CONFIG.GOOGLE_SHEET_URL + '?apiKey=' + CONFIG.API_KEY)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        allOrders = data.orders;
-                        updateStatistics();
-                        displayOrders(allOrders);
-                    } else {
-                        console.error('Error loading orders:', data.message);
-                        alert('Failed to load orders from Google Sheets. Please check your configuration.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Failed to load from Google Sheets:', error);
-                    alert('Failed to connect to Google Sheets. Please check your internet connection and configuration.');
-                });
-        }
+  <!-- ── Order Detail Modal ─────────────────────────────── -->
+  <div id="orderDetailModal" class="modal">
+    <div class="modal-content order-detail-content">
+      <span class="close-modal" onclick="closeModal('orderDetailModal')">&times;</span>
+      <h2>ORDER DETAILS</h2>
+      <div id="orderDetailBody"></div>
+    </div>
+  </div>
 
-        function updateStatistics() {
-            const today = new Date().toDateString();
-            
-            document.getElementById('totalOrders').textContent = allOrders.length;
-            document.getElementById('pendingOrders').textContent = allOrders.length;
-            
-            const totalRevenue = allOrders.reduce((sum, order) => {
-                const amount = parseFloat(order.total.replace(/[₱,]/g, ''));
-                return sum + amount;
-            }, 0);
-            document.getElementById('totalRevenue').textContent = `₱${totalRevenue.toFixed(0)}`;
-            
-            const todayOrders = allOrders.filter(order => 
-                new Date(order.timestamp).toDateString() === today
-            ).length;
-            document.getElementById('todayOrders').textContent = todayOrders;
-        }
+  <!-- ── Delete Confirm Modal ───────────────────────────── -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content" style="max-width:440px;padding:2.5rem;text-align:center;">
+      <span class="close-modal" onclick="closeModal('confirmModal')">&times;</span>
+      <h2 style="margin-bottom:1rem;" id="confirmTitle">CONFIRM DELETE</h2>
+      <p style="color:var(--text-secondary);margin-bottom:2rem;" id="confirmMsg">Are you sure?</p>
+      <div style="display:flex;gap:1rem;justify-content:center;">
+        <button class="btn btn-secondary" onclick="closeModal('confirmModal')">CANCEL</button>
+        <button class="btn btn-danger"    onclick="confirmAction()">DELETE</button>
+      </div>
+    </div>
+  </div>
 
-        function displayOrders(orders) {
-            const tbody = document.getElementById('ordersTableBody');
-            const noOrders = document.getElementById('noOrders');
-            const table = document.getElementById('ordersTable');
+  <script>
+  // ============================================================
+  // DamnSon Clothing — Admin Dashboard Script
+  // ============================================================
 
-            if (orders.length === 0) {
-                table.style.display = 'none';
-                noOrders.style.display = 'block';
-                return;
-            }
+  let allOrders    = [];
+  let adminProducts = [];
+  let inventoryData = [];
+  let pendingConfirmFn = null;
 
-            table.style.display = 'table';
-            noOrders.style.display = 'none';
+  // ── Auth ────────────────────────────────────────────────
+  window.onload = () => {
+    if (sessionStorage.getItem('ds_admin') === 'true') showDashboard();
+  };
 
-            tbody.innerHTML = orders.map(order => {
-                const date = new Date(order.timestamp);
-                const formattedDate = date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
+  function login(e) {
+    e.preventDefault();
+    const pwd = document.getElementById('passwordInput').value;
+    const err = document.getElementById('errorMessage');
+    if (pwd === CONFIG.ADMIN_PASSWORD) {
+      sessionStorage.setItem('ds_admin', 'true');
+      showDashboard();
+    } else {
+      err.style.display = 'block';
+      document.getElementById('passwordInput').value = '';
+      setTimeout(() => { err.style.display = 'none'; }, 3000);
+    }
+  }
 
-                return `
-                    <tr>
-                        <td><span class="order-number">${order.orderNumber}</span></td>
-                        <td>${formattedDate}</td>
-                        <td>${order.customerName}</td>
-                        <td>${order.product}</td>
-                        <td>${order.size}</td>
-                        <td>${order.quantity}</td>
-                        <td><strong>${order.total}</strong></td>
-                        <td>${order.paymentMode}</td>
-                        <td>
-                            <div class="action-cell">
-                                <button class="btn-small btn-view" onclick='viewOrder(${JSON.stringify(order).replace(/'/g, "&apos;")})'>VIEW</button>
-                                <button class="btn-small btn-delete" onclick='deleteOrder("${order.orderNumber}")'>DEL</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
+  function logout() {
+    if (confirm('Logout?')) { sessionStorage.removeItem('ds_admin'); location.reload(); }
+  }
 
-        function viewOrder(order) {
-            const modal = document.getElementById('orderModal');
-            const detail = document.getElementById('orderDetail');
-            
-            const date = new Date(order.timestamp);
-            const formattedDate = date.toLocaleString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+  function showDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminContainer').classList.add('authenticated');
+    loadOrders();
+    loadAdminProducts();
+    loadInventory();
+  }
 
-            detail.innerHTML = `
-                <h4>ORDER DETAILS</h4>
-                <div class="detail-row">
-                    <div class="detail-label">Order Number:</div>
-                    <div class="detail-value"><strong>${order.orderNumber}</strong></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Date & Time:</div>
-                    <div class="detail-value">${formattedDate}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Customer Name:</div>
-                    <div class="detail-value">${order.customerName}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Contact Number:</div>
-                    <div class="detail-value"><a href="tel:${order.contactNumber}" style="color: var(--accent-color);">${order.contactNumber}</a></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Address:</div>
-                    <div class="detail-value">${order.address}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Product:</div>
-                    <div class="detail-value"><strong>${order.product}</strong></div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Size:</div>
-                    <div class="detail-value">${order.size}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Quantity:</div>
-                    <div class="detail-value">${order.quantity}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Payment Method:</div>
-                    <div class="detail-value">${order.paymentMode}</div>
-                </div>
-                <div class="detail-row">
-                    <div class="detail-label">Total Amount:</div>
-                    <div class="detail-value"><strong style="font-size: 1.5rem; color: var(--accent-color);">${order.total}</strong></div>
-                </div>
-                ${order.notes ? `
-                <div class="detail-row">
-                    <div class="detail-label">Notes:</div>
-                    <div class="detail-value">${order.notes}</div>
-                </div>
-                ` : ''}
-            `;
-            
-            modal.style.display = 'block';
-        }
+  // ── Tabs ────────────────────────────────────────────────
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+  }
 
-        function closeOrderModal() {
-            document.getElementById('orderModal').style.display = 'none';
-        }
+  // ── Toast ───────────────────────────────────────────────
+  function toast(msg, type = 'success') {
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
 
-        function deleteOrder(orderNumber) {
-            if (!confirm('Are you sure you want to delete this order from the view?')) return;
-            
-            alert('⚠️ Note: This only removes the order from the current view. To permanently delete from Google Sheets, you must delete it manually from the spreadsheet.');
-            
-            allOrders = allOrders.filter(order => order.orderNumber !== orderNumber);
-            displayOrders(allOrders);
-        }
+  // ── Modal ───────────────────────────────────────────────
+  function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+  }
 
-        function clearAllOrders() {
-            if (!confirm('⚠️ WARNING: This will refresh the view. To permanently delete orders, you must delete them manually from Google Sheets. Continue?')) return;
-            
-            loadOrders();
-        }
+  window.addEventListener('click', e => {
+    if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+  });
 
-        // Inventory Management Functions
-        let inventoryData = [];
+  // ── Confirm dialog ───────────────────────────────────────
+  function showConfirm(title, msg, fn) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').textContent   = msg;
+    pendingConfirmFn = fn;
+    document.getElementById('confirmModal').style.display = 'block';
+  }
 
-        function loadInventory() {
-            if (typeof CONFIG === 'undefined' || !CONFIG.GOOGLE_SHEET_URL || CONFIG.GOOGLE_SHEET_URL === 'YOUR_WEB_APP_URL_HERE') {
-                console.error('CONFIG not loaded or GOOGLE_SHEET_URL not configured');
-                return;
-            }
+  function confirmAction() {
+    closeModal('confirmModal');
+    if (pendingConfirmFn) { pendingConfirmFn(); pendingConfirmFn = null; }
+  }
 
-            // Fetch inventory from Google Sheets
-            fetch(CONFIG.GOOGLE_SHEET_URL + '?action=getInventory&apiKey=' + CONFIG.API_KEY)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 'success') {
-                        inventoryData = data.inventory;
-                        displayInventory();
-                    } else {
-                        console.error('Error loading inventory:', data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Failed to load inventory:', error);
-                });
-        }
+  // ── API helper ───────────────────────────────────────────
+  async function apiGet(action, extra = '') {
+    const url = `${CONFIG.GOOGLE_SHEET_URL}?action=${action}&apiKey=${CONFIG.API_KEY}${extra}`;
+    const res  = await fetch(url);
+    return res.json();
+  }
 
-        function displayInventory() {
-            const grid = document.getElementById('inventoryGrid');
-            
-            // Group by product
-            const products = {};
-            inventoryData.forEach(item => {
-                if (!products[item.product]) {
-                    products[item.product] = [];
-                }
-                products[item.product].push(item);
-            });
+  async function apiPost(body) {
+    const res = await fetch(CONFIG.GOOGLE_SHEET_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, apiKey: CONFIG.API_KEY })
+    });
+    // no-cors fallback: if no response body, treat as success
+    try { return await res.json(); } catch(_) { return { status: 'success' }; }
+  }
 
-            grid.innerHTML = Object.keys(products).map(productName => {
-                const productItems = products[productName];
-                
-                return `
-                    <div class="inventory-card">
-                        <h3>${productName}</h3>
-                        ${productItems.map(item => `
-                            <div class="size-stock-row">
-                                <span class="size-label">Size ${item.size}:</span>
-                                <div class="stock-input-group">
-                                    <input 
-                                        type="number" 
-                                        class="stock-input" 
-                                        id="stock-${item.product}-${item.size}"
-                                        value="${item.stock}"
-                                        min="0"
-                                    >
-                                    <button 
-                                        class="btn-update-stock" 
-                                        onclick="updateStock('${item.product}', '${item.size}')"
-                                    >
-                                        UPDATE
-                                    </button>
-                                    <span class="stock-value ${item.stock === 0 ? 'stock-out' : item.stock < 5 ? 'stock-low' : ''}">
-                                        ${item.stock === 0 ? 'OUT' : item.stock < 5 ? 'LOW' : 'OK'}
-                                    </span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }).join('');
-        }
+  async function apiPostNoCors(body) {
+    await fetch(CONFIG.GOOGLE_SHEET_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, apiKey: CONFIG.API_KEY })
+    });
+    return { status: 'success' };
+  }
 
-        function updateStock(product, size) {
-            const inputId = `stock-${product}-${size}`;
-            const newStock = parseInt(document.getElementById(inputId).value);
+  // ══════════════════════════════════════════════════════════
+  //  ORDERS TAB
+  // ══════════════════════════════════════════════════════════
+  async function loadOrders() {
+    try {
+      const data = await apiGet('getOrders');
+      if (data.status === 'success') {
+        allOrders = data.orders || [];
+        updateOrderStats();
+        populateProductFilter();
+        filterOrders();
+      } else {
+        toast('Failed to load orders: ' + (data.message || ''), 'error');
+      }
+    } catch (err) {
+      toast('Network error loading orders', 'error');
+      console.error(err);
+    }
+  }
 
-            if (isNaN(newStock) || newStock < 0) {
-                alert('Please enter a valid stock number (0 or greater)');
-                return;
-            }
+  function updateOrderStats() {
+    const today = new Date().toDateString();
+    const total   = allOrders.length;
+    const pending = allOrders.filter(o => (o.status || 'pending') === 'pending').length;
+    const shipped = allOrders.filter(o => o.status === 'shipped').length;
+    const revenue = allOrders
+      .filter(o => o.status !== 'cancelled')
+      .reduce((sum, o) => sum + parseFloat(String(o.total).replace(/[₱,]/g, '') || 0), 0);
+    const todayCount = allOrders.filter(o => new Date(o.timestamp).toDateString() === today).length;
 
-            // Send update to Google Sheets
-            fetch(CONFIG.GOOGLE_SHEET_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    action: 'updateInventory',
-                    apiKey: CONFIG.API_KEY,
-                    product: product,
-                    size: size,
-                    stock: newStock
-                })
-            }).then(() => {
-                console.log('Stock updated successfully');
-                // Reload inventory to show updated values
-                setTimeout(() => loadInventory(), 1000);
-            }).catch(error => {
-                console.error('Error updating stock:', error);
-                alert('Failed to update stock. Please try again.');
-            });
-        }
+    document.getElementById('statTotal').textContent   = total;
+    document.getElementById('statPending').textContent = pending;
+    document.getElementById('statShipped').textContent = shipped;
+    document.getElementById('statRevenue').textContent = `₱${revenue.toLocaleString('en-PH', {minimumFractionDigits:0})}`;
+    document.getElementById('statToday').textContent   = todayCount;
+  }
 
-        function filterOrders() {
-            const productFilter = document.getElementById('filterProduct').value;
-            const paymentFilter = document.getElementById('filterPayment').value;
-            const dateFilter = document.getElementById('filterDate').value;
+  function populateProductFilter() {
+    const sel = document.getElementById('filterProduct');
+    const cur = sel.value;
+    const products = [...new Set(allOrders.map(o => o.product).filter(Boolean))].sort();
+    sel.innerHTML = '<option value="">All Products</option>' +
+      products.map(p => `<option value="${p}"${p===cur?' selected':''}>${p}</option>`).join('');
+  }
 
-            let filtered = allOrders;
+  function filterOrders() {
+    const product = document.getElementById('filterProduct').value;
+    const status  = document.getElementById('filterStatus').value;
+    const payment = document.getElementById('filterPayment').value;
+    const date    = document.getElementById('filterDate').value;
+    const search  = document.getElementById('filterSearch').value.toLowerCase();
 
-            if (productFilter) {
-                filtered = filtered.filter(order => order.product === productFilter);
-            }
+    let filtered = allOrders;
+    if (product) filtered = filtered.filter(o => o.product === product);
+    if (status)  filtered = filtered.filter(o => (o.status || 'pending') === status);
+    if (payment) filtered = filtered.filter(o => o.paymentMode === payment);
+    if (date)    filtered = filtered.filter(o => new Date(o.timestamp).toISOString().slice(0,10) === date);
+    if (search)  filtered = filtered.filter(o =>
+      (o.customerName || '').toLowerCase().includes(search) ||
+      (o.orderNumber  || '').toLowerCase().includes(search)
+    );
 
-            if (paymentFilter) {
-                filtered = filtered.filter(order => order.paymentMode === paymentFilter);
-            }
+    renderOrdersTable(filtered);
+  }
 
-            if (dateFilter) {
-                filtered = filtered.filter(order => {
-                    const orderDate = new Date(order.timestamp).toISOString().split('T')[0];
-                    return orderDate === dateFilter;
-                });
-            }
+  function renderOrdersTable(orders) {
+    const tbody   = document.getElementById('ordersBody');
+    const noOrders= document.getElementById('noOrders');
+    const table   = document.getElementById('ordersTable');
 
-            displayOrders(filtered);
-        }
+    if (!orders.length) {
+      table.style.display    = 'none';
+      noOrders.style.display = 'block';
+      return;
+    }
 
-        function exportToCSV() {
-            if (allOrders.length === 0) {
-                alert('No orders to export!');
-                return;
-            }
+    table.style.display    = 'table';
+    noOrders.style.display = 'none';
 
-            const headers = ['Order Number', 'Date', 'Customer Name', 'Contact Number', 'Address', 'Product', 'Size', 'Quantity', 'Payment Method', 'Total', 'Notes'];
-            
-            const csvContent = [
-                headers.join(','),
-                ...allOrders.map(order => {
-                    const date = new Date(order.timestamp).toLocaleString();
-                    return [
-                        order.orderNumber,
-                        `"${date}"`,
-                        `"${order.customerName}"`,
-                        order.contactNumber,
-                        `"${order.address}"`,
-                        order.product,
-                        order.size,
-                        order.quantity,
-                        order.paymentMode,
-                        order.total,
-                        `"${order.notes || ''}"`
-                    ].join(',');
-                })
-            ].join('\n');
+    tbody.innerHTML = orders.map(order => {
+      const d = new Date(order.timestamp);
+      const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+      const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+      const st = order.status || 'pending';
 
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `damnson-orders-${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
+      return `
+        <tr>
+          <td><span class="order-number">${order.orderNumber}</span></td>
+          <td style="font-size:0.8rem;">${dateStr}<br><span style="color:var(--text-secondary)">${timeStr}</span></td>
+          <td>${order.customerName}</td>
+          <td>${order.product}</td>
+          <td>${order.size}</td>
+          <td>${order.quantity}</td>
+          <td><strong>${order.total}</strong></td>
+          <td style="font-size:0.8rem;">${order.paymentMode}</td>
+          <td>
+            <select class="status-select" onchange="updateOrderStatus('${order.orderNumber}', this.value)">
+              <option value="pending"   ${st==='pending'   ?'selected':''}>Pending</option>
+              <option value="confirmed" ${st==='confirmed' ?'selected':''}>Confirmed</option>
+              <option value="shipped"   ${st==='shipped'   ?'selected':''}>Shipped</option>
+              <option value="cancelled" ${st==='cancelled' ?'selected':''}>Cancelled</option>
+            </select>
+          </td>
+          <td>
+            <div style="display:flex;gap:0.4rem;">
+              <button class="btn btn-primary btn-sm" onclick='viewOrderDetail(${JSON.stringify(order).replace(/'/g,"&#39;")})'>VIEW</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('orderModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        };
-    </script>
+  async function updateOrderStatus(orderNumber, status) {
+    try {
+      await apiPostNoCors({ action: 'updateOrderStatus', orderNumber, status });
+      // Update local state
+      const order = allOrders.find(o => o.orderNumber === orderNumber);
+      if (order) order.status = status;
+      updateOrderStats();
+      toast(`Order ${orderNumber} → ${status}`);
+    } catch (err) {
+      toast('Failed to update status', 'error');
+    }
+  }
+
+  function viewOrderDetail(order) {
+    const d = new Date(order.timestamp);
+    document.getElementById('orderDetailBody').innerHTML = `
+      <div class="detail-grid">
+        ${row('Order Number', `<strong style="color:var(--accent-color)">${order.orderNumber}</strong>`)}
+        ${row('Date & Time',  d.toLocaleString('en-US',{weekday:'short',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}))}
+        ${row('Customer',     order.customerName)}
+        ${row('Contact',      `<a href="tel:${order.contactNumber}" style="color:var(--accent-color)">${order.contactNumber}</a>`)}
+        ${row('Address',      order.address)}
+        ${row('Product',      `<strong>${order.product}</strong>`)}
+        ${row('Size',         order.size)}
+        ${row('Quantity',     order.quantity)}
+        ${row('Payment',      order.paymentMode)}
+        ${row('Total',        `<strong style="font-size:1.4rem;color:var(--accent-color)">${order.total}</strong>`)}
+        ${row('Status',       `<span class="status-badge status-${order.status||'pending'}">${(order.status||'pending').toUpperCase()}</span>`)}
+        ${order.notes ? row('Notes', order.notes) : ''}
+      </div>
+    `;
+    document.getElementById('orderDetailModal').style.display = 'block';
+  }
+
+  function row(label, value) {
+    return `<div class="detail-row"><div class="detail-label">${label}</div><div class="detail-value">${value}</div></div>`;
+  }
+
+  function exportOrdersCSV() {
+    if (!allOrders.length) { toast('No orders to export', 'info'); return; }
+    const headers = ['Order #','Date','Customer','Contact','Address','Product','Size','Qty','Payment','Total','Status','Notes'];
+    const csv = [
+      headers.join(','),
+      ...allOrders.map(o => [
+        o.orderNumber,
+        `"${new Date(o.timestamp).toLocaleString()}"`,
+        `"${o.customerName}"`,
+        o.contactNumber,
+        `"${o.address}"`,
+        o.product,
+        o.size,
+        o.quantity,
+        o.paymentMode,
+        o.total,
+        o.status || 'pending',
+        `"${o.notes || ''}"`
+      ].join(','))
+    ].join('\n');
+
+    const a = document.createElement('a');
+    a.href     = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `damnson-orders-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('CSV exported!');
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  PRODUCTS TAB (CMS)
+  // ══════════════════════════════════════════════════════════
+  async function loadAdminProducts() {
+    try {
+      const data = await apiGet('getAllProducts');
+      if (data.status === 'success') {
+        adminProducts = data.products || [];
+        renderProductsTable();
+      } else {
+        // Fallback to getProducts if getAllProducts not yet deployed
+        const data2 = await apiGet('getProducts');
+        adminProducts = data2.products || [];
+        renderProductsTable();
+      }
+    } catch (err) {
+      toast('Failed to load products', 'error');
+      console.error(err);
+    }
+  }
+
+  function renderProductsTable() {
+    const tbody = document.getElementById('productsBody');
+    const noEl  = document.getElementById('noProducts');
+    const table = document.getElementById('productsTable');
+
+    if (!adminProducts.length) {
+      table.style.display = 'none';
+      noEl.style.display  = 'block';
+      return;
+    }
+
+    table.style.display = 'table';
+    noEl.style.display  = 'none';
+
+    tbody.innerHTML = adminProducts.map(p => {
+      const img      = p.images?.[0] || p.image1 || '';
+      const featured = p.featured === true || p.featured === 'TRUE';
+      const st       = p.status || 'draft';
+
+      return `
+        <tr>
+          <td>
+            ${img
+              ? `<img src="${img}" class="product-thumb" alt="${p.name}">`
+              : `<div class="product-thumb-placeholder">📷</div>`}
+          </td>
+          <td style="font-family:monospace;font-size:0.8rem;color:var(--text-secondary)">${p.productId}</td>
+          <td><strong>${p.name}</strong></td>
+          <td>₱${Number(p.price).toLocaleString()}</td>
+          <td><span class="status-badge status-${st}">${st.toUpperCase()}</span></td>
+          <td>
+            <span class="featured-toggle" title="${featured?'Remove from featured':'Set as featured'}"
+              onclick="toggleFeatured('${p.productId}', ${!featured})">
+              ${featured ? '⭐' : '☆'}
+            </span>
+          </td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${p.badge || '—'}</td>
+          <td style="text-align:center">${p.sortOrder || '—'}</td>
+          <td>
+            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+              <button class="btn btn-primary btn-sm" onclick="openProductForm('${p.productId}')">EDIT</button>
+              <button class="btn btn-danger  btn-sm" onclick="deleteProductConfirm('${p.productId}','${p.name}')">DEL</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ── Product Form ─────────────────────────────────────────
+  function openProductForm(productId = null) {
+    document.getElementById('productForm').reset();
+    clearImagePreviews();
+
+    if (productId) {
+      // Edit mode
+      const p = adminProducts.find(x => x.productId === productId);
+      if (!p) return;
+      document.getElementById('productFormTitle').textContent = 'EDIT PRODUCT';
+      document.getElementById('pfMode').value      = 'edit';
+      document.getElementById('pfProductId').value = p.productId;
+      document.getElementById('pfId').value        = p.productId;
+      document.getElementById('pfName').value      = p.name;
+      document.getElementById('pfPrice').value     = p.price;
+      document.getElementById('pfStatus').value    = p.status || 'draft';
+      document.getElementById('pfBadge').value     = p.badge || '';
+      document.getElementById('pfSort').value      = p.sortOrder || 99;
+      document.getElementById('pfDesc').value      = p.description || '';
+      document.getElementById('pfFeatured').checked= (p.featured === true || p.featured === 'TRUE');
+
+      const imgs = [p.image1||'', p.image2||'', p.image3||'', p.image4||''];
+      imgs.forEach((img, i) => {
+        const n = i + 1;
+        document.getElementById(`pfImg${n}`).value = img;
+        if (img) showImagePreview(`pfImg${n}`, `prev${n}`, img);
+      });
+
+    } else {
+      // Add mode
+      document.getElementById('productFormTitle').textContent = 'ADD PRODUCT';
+      document.getElementById('pfMode').value = 'add';
+      document.getElementById('pfProductId').value = '';
+      document.getElementById('pfId').value = '';
+      document.getElementById('pfStatus').value = 'active';
+    }
+
+    document.getElementById('productFormModal').style.display = 'block';
+  }
+
+  async function saveProduct(e) {
+    e.preventDefault();
+    const mode = document.getElementById('pfMode').value;
+    const btn  = document.getElementById('saveProductBtn');
+    btn.textContent = 'SAVING...';
+    btn.disabled    = true;
+
+    const payload = {
+      action:      mode === 'add' ? 'addProduct' : 'updateProduct',
+      productId:   document.getElementById('pfProductId').value,
+      name:        document.getElementById('pfName').value.trim(),
+      price:       parseFloat(document.getElementById('pfPrice').value),
+      description: document.getElementById('pfDesc').value.trim(),
+      status:      document.getElementById('pfStatus').value,
+      featured:    document.getElementById('pfFeatured').checked,
+      badge:       document.getElementById('pfBadge').value.trim(),
+      sortOrder:   parseInt(document.getElementById('pfSort').value) || 99,
+      image1:      document.getElementById('pfImg1').value.trim(),
+      image2:      document.getElementById('pfImg2').value.trim(),
+      image3:      document.getElementById('pfImg3').value.trim(),
+      image4:      document.getElementById('pfImg4').value.trim()
+    };
+
+    try {
+      await apiPostNoCors(payload);
+      toast(mode === 'add' ? 'Product added!' : 'Product updated!');
+      closeModal('productFormModal');
+      await loadAdminProducts();
+      await loadInventory(); // refresh inventory if new product was added
+    } catch (err) {
+      toast('Failed to save product', 'error');
+      console.error(err);
+    } finally {
+      btn.textContent = 'SAVE PRODUCT';
+      btn.disabled    = false;
+    }
+  }
+
+  function deleteProductConfirm(productId, name) {
+    showConfirm(
+      'DELETE PRODUCT',
+      `Delete "${name}"? This cannot be undone.`,
+      () => deleteProduct(productId)
+    );
+  }
+
+  async function deleteProduct(productId) {
+    try {
+      await apiPostNoCors({ action: 'deleteProduct', productId });
+      toast('Product deleted');
+      await loadAdminProducts();
+    } catch (err) {
+      toast('Failed to delete product', 'error');
+    }
+  }
+
+  async function toggleFeatured(productId, featured) {
+    try {
+      await apiPostNoCors({ action: 'updateProduct', productId, featured });
+      const p = adminProducts.find(x => x.productId === productId);
+      if (p) p.featured = featured;
+      renderProductsTable();
+      toast(featured ? 'Added to featured' : 'Removed from featured');
+    } catch (err) {
+      toast('Failed to update', 'error');
+    }
+  }
+
+  // ── Image preview helpers ─────────────────────────────────
+  function previewImage(inputId, previewId) {
+    const url = document.getElementById(inputId).value.trim();
+    showImagePreview(inputId, previewId, url);
+  }
+
+  function showImagePreview(inputId, previewId, url) {
+    const imgEl = document.getElementById(previewId);
+    const phEl  = document.getElementById(previewId + 'ph');
+    if (url) {
+      imgEl.src              = url;
+      imgEl.className        = 'image-preview visible';
+      if (phEl) phEl.style.display = 'none';
+    } else {
+      imgEl.className        = 'image-preview';
+      if (phEl) phEl.style.display = 'flex';
+    }
+  }
+
+  function clearImagePreviews() {
+    [1,2,3,4].forEach(n => {
+      const imgEl = document.getElementById(`prev${n}`);
+      const phEl  = document.getElementById(`prev${n}ph`);
+      if (imgEl) imgEl.className = 'image-preview';
+      if (phEl)  phEl.style.display = 'flex';
+    });
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  INVENTORY TAB
+  // ══════════════════════════════════════════════════════════
+  async function loadInventory() {
+    try {
+      const data = await apiGet('getInventory');
+      if (data.status === 'success') {
+        inventoryData = data.inventory || [];
+        renderInventoryGrid();
+      }
+    } catch (err) {
+      toast('Failed to load inventory', 'error');
+    }
+  }
+
+  function renderInventoryGrid() {
+    const grid  = document.getElementById('inventoryGrid');
+    const noEl  = document.getElementById('noInventory');
+
+    if (!inventoryData.length) {
+      grid.innerHTML     = '';
+      noEl.style.display = 'block';
+      return;
+    }
+    noEl.style.display = 'none';
+
+    // Group by product
+    const grouped = {};
+    inventoryData.forEach(item => {
+      const key = item.product || item.productId;
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(item);
+    });
+
+    grid.innerHTML = Object.entries(grouped).map(([productName, items]) => `
+      <div class="inventory-card">
+        <h3>${productName}</h3>
+        ${items.map(item => {
+          const stock = Number(item.stock);
+          const cls   = stock === 0 ? 'stock-out' : stock < 5 ? 'stock-low' : 'stock-ok';
+          const label = stock === 0 ? 'OUT' : stock < 5 ? 'LOW' : 'OK';
+          const pid   = item.productId || item.product;
+          return `
+            <div class="size-stock-row">
+              <span class="size-label">${item.size}</span>
+              <div class="stock-input-group">
+                <input type="number" class="stock-input" min="0"
+                  id="stock-${pid}-${item.size}" value="${stock}">
+                <button class="btn-update-stock"
+                  onclick="updateStock('${pid}', '${item.size}')">SET</button>
+                <span class="stock-status ${cls}">${label}</span>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `).join('');
+  }
+
+  async function updateStock(productId, size) {
+    const inputId = `stock-${productId}-${size}`;
+    const newStock = parseInt(document.getElementById(inputId).value);
+
+    if (isNaN(newStock) || newStock < 0) {
+      toast('Enter a valid stock number (0 or more)', 'error');
+      return;
+    }
+
+    try {
+      await apiPostNoCors({ action: 'updateInventory', productId, size, stock: newStock });
+      toast(`Stock updated: ${productId} ${size} → ${newStock}`);
+      // Update local
+      const item = inventoryData.find(i =>
+        (i.productId === productId || i.product === productId) && i.size === size
+      );
+      if (item) item.stock = newStock;
+      renderInventoryGrid();
+    } catch (err) {
+      toast('Failed to update stock', 'error');
+    }
+  }
+  </script>
 </body>
 </html>
