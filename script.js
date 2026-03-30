@@ -338,3 +338,33 @@ if (window.history.replaceState) {
 
 console.log('%c🔥 DAMNSON CLOTHING 🔥', 'font-size:20px;font-weight:bold;color:#fff;background:#000;padding:10px;');
 console.log('%cDon\'t settle for ordinary streetwear', 'font-size:14px;color:#888;');
+
+
+
+function doGet(e) {
+  var action = e.parameter.action;
+  var apiKey = e.parameter.apiKey;
+  
+  // Your API key validation
+  if (apiKey !== 'damnson_secure_2026_key') {
+    return ContentService.createTextOutput(JSON.stringify({ error: 'Invalid API key' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  var result;
+  
+  if (action === 'getInventory') {
+    result = getInventory();
+  } else if (action === 'getOrders') {
+    result = getOrders();
+  } else if (action === 'getProducts') {      // <-- ADDED THIS
+    result = getProducts();
+  } else if (action === 'getAllProducts') {   // <-- ADDED THIS
+    result = getAllProducts();
+  } else {
+    result = { error: 'Unknown action: ' + action };
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify(result))
+    .setMimeType(ContentService.MimeType.JSON);
+}
