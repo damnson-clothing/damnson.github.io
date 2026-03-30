@@ -8,14 +8,12 @@ let allInventory = [];
 let currentProduct  = null;
 let selectedSize    = null;
 
-// ── Init ──────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   initNav();
   loadProducts();
   initScrollEffects();
 });
 
-// ── Navigation ────────────────────────────────────────────
 function initNav() {
   const hamburger = document.querySelector('.hamburger');
   const navMenu   = document.querySelector('.nav-menu');
@@ -27,7 +25,6 @@ function initNav() {
     link.addEventListener('click', () => navMenu.classList.remove('active'));
   });
 
-  // Smooth scroll with navbar offset
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', e => {
       e.preventDefault();
@@ -36,14 +33,12 @@ function initNav() {
     });
   });
 
-  // Navbar shadow on scroll
   window.addEventListener('scroll', () => {
     document.querySelector('.navbar').style.boxShadow =
       window.pageYOffset > 100 ? '0 2px 20px rgba(0,0,0,0.5)' : 'none';
   });
 }
 
-// ── Load products from Google Sheets ─────────────────────
 async function loadProducts() {
   showState('loading');
 
@@ -76,7 +71,6 @@ function showState(state) {
   document.getElementById('productsEmpty').style.display   = state === 'empty'   ? 'block' : 'none';
 }
 
-// ── Render product cards ──────────────────────────────────
 function renderProducts() {
   const grid = document.getElementById('productsGrid');
 
@@ -87,7 +81,6 @@ function renderProducts() {
 
   grid.innerHTML = allProducts.map(product => buildProductCard(product)).join('');
 
-  // Animate on scroll
   document.querySelectorAll('.product-card').forEach(card => {
     card.style.opacity    = '0';
     card.style.transform  = 'translateY(50px)';
@@ -103,8 +96,10 @@ function buildProductCard(product) {
   const hoverImage  = product.images?.[1] || mainImage;
   const totalStock  = getTotalStock(product.productId || product.name);
   const isOOS       = totalStock === 0;
+  
+  // --- NEW FIXED BADGE STRING ---
   const badgeHtml   = product.badge
-    ? `<div class="product-badge badge-${product.badge.toLowerCase().replace(/\s+/g,'-')}">${product.badge}</div>`
+    ? `<div class="product-badge badge-${String(product.badge).toLowerCase().replace(/\s+/g,'-')}">${product.badge}</div>`
     : '';
 
   const stockBadge = isOOS
@@ -140,7 +135,6 @@ function buildProductCard(product) {
   `;
 }
 
-// ── Inventory helpers ─────────────────────────────────────
 function getStock(productId, size) {
   const item = allInventory.find(i =>
     (i.productId === productId || i.product === productId) && i.size === size
@@ -154,7 +148,6 @@ function getTotalStock(productId) {
     .reduce((sum, i) => sum + Number(i.stock), 0);
 }
 
-// ── Quick-view modal ──────────────────────────────────────
 function openQuickView(productId) {
   const product = allProducts.find(p => p.productId === productId);
   if (!product) return;
@@ -165,18 +158,15 @@ function openQuickView(productId) {
   document.getElementById('modalPrice').textContent        = `₱${Number(product.price).toLocaleString()}.00`;
   document.getElementById('modalDescription').textContent  = product.description || '';
 
-  // Main image
   const images = product.images || [];
   document.getElementById('modalMainImage').src = images[0] || '';
 
-  // Thumbnails
   const thumbContainer = document.getElementById('modalThumbnails');
   thumbContainer.innerHTML = images.map((img, i) => `
     <img src="${img}" class="thumbnail${i === 0 ? ' active' : ''}"
       onclick="changeModalImage('${img}', this)" alt="${product.name}">
   `).join('');
 
-  // Size buttons
   const sizesEl = document.getElementById('modalSizeOptions');
   const SIZES   = ['S','M','L','XL','XXL'];
   sizesEl.innerHTML = SIZES.map(size => {
@@ -201,7 +191,6 @@ function selectSize(btn, size) {
   selectedSize = size;
 }
 
-// Modal order btn
 document.getElementById('modalOrderBtn').addEventListener('click', () => {
   if (!selectedSize) { alert('Please select a size first!'); return; }
   closeModal('productModal');
@@ -210,7 +199,6 @@ document.getElementById('modalOrderBtn').addEventListener('click', () => {
   }, 200);
 });
 
-// ── Order form ────────────────────────────────────────────
 function openOrderForm(productId, preSelectedSize = '') {
   const product = allProducts.find(p => p.productId === productId);
   if (!product) return;
@@ -239,7 +227,6 @@ function updateOrderSummary() {
 
 document.getElementById('orderQty').addEventListener('input', updateOrderSummary);
 
-// ── Submit order ──────────────────────────────────────────
 async function submitOrder(e) {
   e.preventDefault();
 
@@ -250,7 +237,6 @@ async function submitOrder(e) {
   const qty         = parseInt(document.getElementById('orderQty').value);
   const total       = document.getElementById('orderTotal').textContent;
 
-  // Stock check
   const available = getStock(productId, size);
   if (available < qty) {
     alert(`Sorry, only ${available} item(s) available in size ${size}.`);
@@ -279,14 +265,12 @@ async function submitOrder(e) {
   btn.disabled    = true;
 
   try {
-    // Save order
     await fetch(CONFIG.GOOGLE_SHEET_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderData)
     });
 
-    // Decrease stock
     await fetch(CONFIG.GOOGLE_SHEET_URL, {
       method: 'POST', mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
@@ -296,7 +280,6 @@ async function submitOrder(e) {
       })
     });
 
-    // Update local inventory
     const invItem = allInventory.find(i =>
       (i.productId === productId || i.product === productId) && i.size === size
     );
@@ -306,7 +289,6 @@ async function submitOrder(e) {
     document.getElementById('orderForm').reset();
     document.getElementById('successMessage').style.display = 'flex';
 
-    // Refresh product cards to reflect new stock
     renderProducts();
 
   } catch (err) {
@@ -322,7 +304,6 @@ function closeSuccess() {
   document.getElementById('successMessage').style.display = 'none';
 }
 
-// ── Modal helpers ─────────────────────────────────────────
 function closeModal(id) {
   document.getElementById(id).style.display = 'none';
 }
@@ -338,7 +319,6 @@ window.addEventListener('click', e => {
   if (e.target.classList.contains('modal')) e.target.style.display = 'none';
 });
 
-// ── Scroll animations ─────────────────────────────────────
 const cardObserver = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
@@ -349,7 +329,6 @@ const cardObserver = new IntersectionObserver(entries => {
 }, { threshold: 0.1, rootMargin: '0px 0px -80px 0px' });
 
 function initScrollEffects() {
-  // Observe existing cards if any
   document.querySelectorAll('.product-card').forEach(card => cardObserver.observe(card));
 }
 
