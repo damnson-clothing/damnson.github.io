@@ -224,25 +224,25 @@
         </div>
 
         <div class="form-group" style="margin-top:1.5rem;">
-          <label>PRODUCT IMAGES (paste public URLs)</label>
+          <label>PRODUCT IMAGES (local path or public URLs)</label>
           <div class="image-inputs">
             <div class="image-field">
-              <input type="url" id="pfImg1" placeholder="Image 1 URL (main)" oninput="previewImage('pfImg1','prev1')">
+              <input type="text" id="pfImg1" placeholder="e.g. assets/shirt.jpg" oninput="previewImage('pfImg1','prev1')">
               <img id="prev1" class="image-preview" alt="Preview 1">
               <div class="image-preview-placeholder" id="prev1ph">Image 1 preview</div>
             </div>
             <div class="image-field">
-              <input type="url" id="pfImg2" placeholder="Image 2 URL (hover)" oninput="previewImage('pfImg2','prev2')">
+              <input type="text" id="pfImg2" placeholder="Image 2 URL (hover)" oninput="previewImage('pfImg2','prev2')">
               <img id="prev2" class="image-preview" alt="Preview 2">
               <div class="image-preview-placeholder" id="prev2ph">Image 2 preview</div>
             </div>
             <div class="image-field">
-              <input type="url" id="pfImg3" placeholder="Image 3 URL" oninput="previewImage('pfImg3','prev3')">
+              <input type="text" id="pfImg3" placeholder="Image 3 URL" oninput="previewImage('pfImg3','prev3')">
               <img id="prev3" class="image-preview" alt="Preview 3">
               <div class="image-preview-placeholder" id="prev3ph">Image 3 preview</div>
             </div>
             <div class="image-field">
-              <input type="url" id="pfImg4" placeholder="Image 4 URL" oninput="previewImage('pfImg4','prev4')">
+              <input type="text" id="pfImg4" placeholder="Image 4 URL" oninput="previewImage('pfImg4','prev4')">
               <img id="prev4" class="image-preview" alt="Preview 4">
               <div class="image-preview-placeholder" id="prev4ph">Image 4 preview</div>
             </div>
@@ -831,6 +831,154 @@
     } catch (err) {
       toast('Failed to update stock', 'error');
     }
+  }
+
+  // --- UPDATED: Render Products Table (Fixes "undefined" text) ---
+  function renderProductsTable() {
+    const tbody = document.getElementById('productsBody');
+    const noEl  = document.getElementById('noProducts');
+    const table = document.getElementById('productsTable');
+
+    if (!adminProducts.length) {
+      table.style.display = 'none';
+      noEl.style.display  = 'block';
+      return;
+    }
+
+    table.style.display = 'table';
+    noEl.style.display  = 'none';
+
+    tbody.innerHTML = adminProducts.map(p => {
+      const img      = p.images?.[0] || p.image1 || '';
+      const featured = p.featured === true || p.featured === 'TRUE';
+      const st       = p.status || 'draft';
+      // Fallback for missing names
+      const safeName = (p.name && p.name !== 'undefined') ? p.name : 'Unnamed Product';
+
+      return `
+        <tr>
+          <td>
+            ${img
+              ? `<img src="${img}" class="product-thumb" alt="${safeName}">`
+              : `<div class="product-thumb-placeholder">📷</div>`}
+          </td>
+          <td style="font-family:monospace;font-size:0.8rem;color:var(--text-secondary)">${p.productId}</td>
+          <td><strong>${safeName}</strong></td>
+          <td>₱${Number(p.price || 0).toLocaleString()}</td>
+          <td><span class="status-badge status-${st}">${st.toUpperCase()}</span></td>
+          <td>
+            <span class="featured-toggle" title="${featured?'Remove from featured':'Set as featured'}"
+              onclick="toggleFeatured('${p.productId}', ${!featured})">
+              ${featured ? '⭐' : '☆'}
+            </span>
+          </td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${p.badge || '—'}</td>
+          <td style="text-align:center">${p.sortOrder || '—'}</td>
+          <td>
+            <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+              <button class="btn btn-primary btn-sm" onclick="openProductForm('${p.productId}')">EDIT</button>
+              <button class="btn btn-danger  btn-sm" onclick="deleteProductConfirm('${p.productId}','${safeName.replace(/'/g, "\\'")}')">DEL</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // --- UPDATED: Open Product Form (Clears "undefined" string from inputs) ---
+  function openProductForm(productId = null) {
+    document.getElementById('productForm').reset();
+    clearImagePreviews();
+
+    if (productId) {
+      const p = adminProducts.find(x => x.productId === productId);
+      if (!p) return;
+      document.getElementById('productFormTitle').textContent = 'EDIT PRODUCT';
+      document.getElementById('pfMode').value      = 'edit';
+      document.getElementById('pfProductId').value = p.productId;
+      document.getElementById('pfId').value        = p.productId;
+      
+      // Clean undefined out of the input boxes
+      document.getElementById('pfName').value      = (p.name === 'undefined' || !p.name) ? '' : p.name;
+      document.getElementById('pfPrice').value     = p.price || '';
+      document.getElementById('pfStatus').value    = p.status || 'draft';
+      document.getElementById('pfBadge').value     = (p.badge === 'undefined' || !p.badge) ? '' : p.badge;
+      document.getElementById('pfSort').value      = p.sortOrder || 99;
+      document.getElementById('pfDesc').value      = (p.description === 'undefined' || !p.description) ? '' : p.description;
+      document.getElementById('pfFeatured').checked= (p.featured === true || p.featured === 'TRUE');
+
+      const imgs = [p.image1||'', p.image2||'', p.image3||'', p.image4||''];
+      imgs.forEach((img, i) => {
+        const n = i + 1;
+        document.getElementById(`pfImg${n}`).value = (img === 'undefined') ? '' : img;
+        if (img && img !== 'undefined') showImagePreview(`pfImg${n}`, `prev${n}`, img);
+      });
+
+    } else {
+      document.getElementById('productFormTitle').textContent = 'ADD PRODUCT';
+      document.getElementById('pfMode').value = 'add';
+      document.getElementById('pfProductId').value = '';
+      document.getElementById('pfId').value = '';
+      document.getElementById('pfStatus').value = 'active';
+    }
+
+    document.getElementById('productFormModal').style.display = 'block';
+  }
+
+  // --- UPDATED: Render Inventory Grid (Loops through Products, not Inventory) ---
+  function renderInventoryGrid() {
+    const grid  = document.getElementById('inventoryGrid');
+    const noEl  = document.getElementById('noInventory');
+
+    // If there are no products at all, show empty state
+    if (!adminProducts.length) {
+      grid.innerHTML     = '';
+      noEl.style.display = 'block';
+      return;
+    }
+    noEl.style.display = 'none';
+
+    // The standard size spread for clothing
+    const SIZES = ['S', 'M', 'L', 'XL', 'XXL'];
+
+    // Map through ALL products so brand new items show up here
+    grid.innerHTML = adminProducts.map(product => {
+      const pid = product.productId;
+      const safeName = (product.name && product.name !== 'undefined') ? product.name : 'Unnamed Product';
+
+      // Find all existing inventory rows for this specific product
+      const productInventory = inventoryData.filter(i => 
+        String(i.productId) === String(pid) || String(i.product) === String(pid)
+      );
+
+      return `
+        <div class="inventory-card">
+          <h3>${safeName}</h3>
+          ${SIZES.map(size => {
+            // Check if this specific size has an inventory record yet
+            const invItem = productInventory.find(i => i.size === size);
+            const parsedStock = invItem ? Number(invItem.stock) : 0;
+            const stock       = isNaN(parsedStock) ? 0 : parsedStock;
+            
+            const cls   = stock === 0 ? 'stock-out' : stock < 5 ? 'stock-low' : 'stock-ok';
+            const label = stock === 0 ? 'OUT' : stock < 5 ? 'LOW' : 'OK';
+            
+            return `
+              <div class="size-stock-row">
+                <span class="size-label">${size}</span>
+                <div class="stock-input-group">
+                  <input type="number" class="stock-input" min="0"
+                    id="stock-${pid}-${size}" value="${stock}">
+                  <button class="btn-update-stock"
+                    onclick="updateStock('${pid}', '${size}')">SET</button>
+                  <span class="stock-status ${cls}">${label}</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }).join('');
   }
   </script>
 </body>
